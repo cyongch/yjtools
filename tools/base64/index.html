@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Base64 编解码 - 在线转换，支持中文与URL安全 | 即用工具箱</title>
+<meta name="description" content="免费在线 Base64 编码解码工具，正确支持中文 UTF-8，可选 URL 安全字符集（- _ 替换 + /），自动忽略换行。纯浏览器本地运行，数据不上传。">
+<meta name="keywords" content="base64编码,base64解码,base64在线,base64转换,url安全base64,中文base64">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>文本与编码<span>/</span>Base64 编解码</nav>
+
+  <div class="tool-head">
+    <h1>Base64 编解码</h1>
+    <p class="lead">文本与 Base64 互转，中文、emoji 都不会乱码，支持 URL 安全字符集。</p>
+  </div>
+
+  <div class="note"><b>数据不上传</b><span>编码解码在页面内完成，不产生任何网络请求。</span></div>
+
+  <section class="panel">
+    <div class="grid2">
+      <div>
+        <label class="fl" for="plain">明文 / 原始内容</label>
+        <textarea id="plain" spellcheck="false" placeholder="输入要编码的文字，例如：工程造价从业者"></textarea>
+      </div>
+      <div>
+        <label class="fl" for="b64">Base64 结果</label>
+        <textarea id="b64" spellcheck="false" placeholder="或在左侧输入 Base64，点击「Base64 → 明文」反解"></textarea>
+      </div>
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnEnc">明文 → Base64</button>
+      <button class="btn primary" id="btnDec">Base64 → 明文</button>
+      <button class="btn" id="btnCopy">复制 Base64</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="btns" style="margin-top:12px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2)">
+        <input type="checkbox" id="urlSafe"> URL 安全字符集（用 - _ 替换 + /，并去掉结尾的 =）
+      </label>
+    </div>
+    <p id="status" class="hint">提示：Ctrl / Cmd + Enter 可快速执行编码。</p>
+  </section>
+
+  <section class="prose">
+    <h2>什么是 Base64</h2>
+    <p>Base64 是一种把任意字节数据转换成 64 个可打印字符的编码方式。它<strong>不是加密</strong>，只是"换个写法"——任何人拿到 Base64 都能还原出原文。它的用途是让二进制数据能够安全地塞进只允许文本的场合，比如邮件正文、URL 参数、JSON 字段、CSS 内嵌图片。</p>
+
+    <h2>常见误区</h2>
+    <ul>
+      <li><strong>中文乱码</strong>：不少简易工具直接用 <code>btoa</code>，遇到中文就报错或乱码。本工具先按 UTF-8 转字节再编码，中文、日文、emoji 都正常。</li>
+      <li><strong>URL 里被截断</strong>：标准 Base64 含 <code>+</code>、<code>/</code>、<code>=</code>，放进 URL 或文件名会被转义甚至截断。勾选「URL 安全字符集」可解决。</li>
+      <li><strong>体积会变大</strong>：Base64 编码后体积约为原始的 133%，不适合用来压缩数据。</li>
+    </ul>
+
+    <h2>使用说明</h2>
+    <p>左侧输入明文点「明文 → Base64」；右侧粘贴 Base64 点「Base64 → 明文」反解。解码时会自动忽略换行与空格，所以从配置文件里跨行复制的 Base64 也能直接粘贴。</p>
+  </section>
+
+  <section class="related" id="related" data-current="base64" data-cat="text"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var plainEl = $('plain'), b64El = $('b64'), statusEl = $('status');
+
+  function bytesToBin(bytes) {
+    var s = '', CH = 0x8000;
+    for (var i = 0; i < bytes.length; i += CH) {
+      s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+    }
+    return s;
+  }
+
+  function encode(str) {
+    var bytes = new TextEncoder().encode(str);
+    var s = btoa(bytesToBin(bytes));
+    if ($('urlSafe').checked) s = s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return s;
+  }
+
+  function decode(str) {
+    var s = str.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var bin = atob(s);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (e) {
+      try { return new TextDecoder('gbk').decode(bytes); }
+      catch (e2) { return bytesToBin(bytes); }
+    }
+  }
+
+  $('btnEnc').onclick = function () {
+    var v = plainEl.value;
+    if (!v) { toast('请先在左侧输入内容', 'err'); return; }
+    try {
+      b64El.value = encode(v);
+      setStatus(statusEl, '编码完成，共 ' + b64El.value.length + ' 个字符。');
+    } catch (e) { setStatus(statusEl, '编码失败：' + e.message, true); }
+  };
+
+  $('btnDec').onclick = function () {
+    var v = b64El.value.trim() || plainEl.value.trim();
+    if (!v) { toast('请先粘贴 Base64 内容', 'err'); return; }
+    try {
+      plainEl.value = decode(v);
+      setStatus(statusEl, '解码完成，共 ' + plainEl.value.length + ' 个字符。');
+    } catch (e) {
+      setStatus(statusEl, '解码失败：内容不是合法的 Base64，请检查是否被截断或混入其他字符。', true);
+    }
+  };
+
+  $('btnCopy').onclick = function () {
+    if (!b64El.value) { toast('还没有结果', 'err'); return; }
+    copyText(b64El.value);
+  };
+
+  $('btnClear').onclick = function () {
+    plainEl.value = ''; b64El.value = '';
+    setStatus(statusEl, '提示：Ctrl / Cmd + Enter 可快速执行编码。');
+  };
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (document.activeElement === b64El) $('btnDec').click();
+      else $('btnEnc').click();
+    }
+  });
+})();
+</script>
+</body>
+</html>

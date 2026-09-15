@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单位换算 - 长度/面积/体积/重量/温度在线转换 | 即用工具箱</title>
+<meta name="description" content="免费在线单位换算工具：长度、面积（含亩）、体积、重量（含斤两）、温度、压力、功率、速度、数据存储、时间单位互转，一次输入列出全部结果。纯本地计算。">
+<meta name="keywords" content="单位换算,长度换算,面积换算,亩与平方米,斤与公斤,摄氏度华氏度,压力换算,兆帕,单位转换器">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#convert">换算</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>计算与转换<span>/</span>单位换算</nav>
+
+  <div class="tool-head">
+    <h1>单位换算</h1>
+    <p class="lead">输入一个数值，一次性列出该类别下所有单位的换算结果。</p>
+  </div>
+
+  <div class="note"><b>不上传任何数据</b><span>纯本地计算，可断网使用。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="cat">换算类别</label>
+        <select id="cat"></select>
+      </div>
+      <div>
+        <label class="fl" for="val">数值</label>
+        <input type="text" id="val" value="1" inputmode="decimal" autocomplete="off">
+      </div>
+      <div>
+        <label class="fl" for="from">原单位</label>
+        <select id="from"></select>
+      </div>
+    </div>
+
+    <p class="fl" style="margin-top:20px">换算结果</p>
+    <ul class="files" id="out"></ul>
+    <p id="status" class="hint">点击任意结果行即可复制该数值。</p>
+  </section>
+
+  <section class="prose">
+    <h2>常用换算速查</h2>
+    <ul>
+      <li><strong>面积</strong>：1 亩 = 666.67 平方米 ≈ 1/15 公顷；1 公顷 = 15 亩 = 10000 平方米。</li>
+      <li><strong>重量</strong>：1 斤 = 500 克，1 两 = 50 克；1 吨 = 1000 千克；1 磅 ≈ 453.6 克。</li>
+      <li><strong>长度</strong>：1 英寸 = 25.4 毫米，1 英尺 = 304.8 毫米，1 英里 ≈ 1.609 千米。</li>
+      <li><strong>压力</strong>：1 兆帕 ≈ 10 巴 ≈ 9.87 标准大气压；1 毫米汞柱 ≈ 133.3 帕。</li>
+      <li><strong>功率</strong>：1 马力 ≈ 735 瓦（公制）／746 瓦（英制，本工具取英制 745.7）。</li>
+    </ul>
+
+    <h2>说明</h2>
+    <p>换算基于国际单位制的精确定义值（如 1 英寸 = 精确 0.0254 米），结果保留 12 位有效数字后去掉多余的零。温度换算采用绝对零度作为中间基准，支持摄氏度、华氏度与开尔文三者互转（注意低于绝对零度的输入会被正常计算但无物理意义）。</p>
+    <p>数据存储类别的 KB / MB / GB 按 1024 进制计算（即 KiB 口径）。若你需要硬盘厂商的 1000 进制口径，可在「长度」类别里当普通数字除法处理，或告诉我，我可以增加一个开关。</p>
+  </section>
+
+  <section class="related" id="related" data-current="unit-convert" data-cat="convert"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  var CATS = {
+    length: { name: '长度', base: '米', units: {
+      '毫米 mm': 0.001, '厘米 cm': 0.01, '分米 dm': 0.1, '米 m': 1, '千米 km': 1000,
+      '英寸 in': 0.0254, '英尺 ft': 0.3048, '码 yd': 0.9144, '英里 mi': 1609.344, '海里 nmi': 1852
+    } },
+    area: { name: '面积', base: '平方米', units: {
+      '平方毫米 mm²': 1e-6, '平方厘米 cm²': 1e-4, '平方分米 dm²': 0.01, '平方米 m²': 1,
+      '公顷 ha': 10000, '平方千米 km²': 1e6, '亩': 2000 / 3, '平方英尺 ft²': 0.09290304,
+      '平方英寸 in²': 0.00064516, '平方英里 mi²': 2589988.110336
+    } },
+    volume: { name: '体积', base: '立方米', units: {
+      '毫升 mL': 1e-6, '立方厘米 cm³': 1e-6, '升 L': 0.001, '立方米 m³': 1,
+      '立方英尺 ft³': 0.028316846592, '加仑(美) gal': 0.003785411784, '加仑(英) gal': 0.00454609
+    } },
+    weight: { name: '重量', base: '千克', units: {
+      '毫克 mg': 1e-6, '克 g': 0.001, '两': 0.05, '斤': 0.5, '千克 kg': 1, '吨 t': 1000,
+      '磅 lb': 0.45359237, '盎司 oz': 0.028349523125, '英吨 long ton': 1016.0469088
+    } },
+    pressure: { name: '压力 / 压强', base: '帕斯卡', units: {
+      '帕 Pa': 1, '千帕 kPa': 1000, '兆帕 MPa': 1e6, '巴 bar': 1e5,
+      '标准大气压 atm': 101325, '毫米汞柱 mmHg': 133.322387415, '磅力/平方英寸 psi': 6894.757293168
+    } },
+    power: { name: '功率', base: '瓦', units: {
+      '瓦 W': 1, '千瓦 kW': 1000, '兆瓦 MW': 1e6, '马力 hp': 745.6998715823, '千卡/小时 kcal/h': 1.163
+    } },
+    speed: { name: '速度', base: '米/秒', units: {
+      '米/秒 m/s': 1, '米/分 m/min': 1 / 60, '千米/小时 km/h': 1 / 3.6,
+      '英里/小时 mph': 0.44704, '节 kn': 1852 / 3600, '英尺/秒 ft/s': 0.3048
+    } },
+    data: { name: '数据存储', base: '字节', units: {
+      '比特 bit': 0.125, '字节 B': 1, '千字节 KB': 1024, '兆字节 MB': 1048576,
+      '吉字节 GB': 1073741824, '太字节 TB': 1099511627776
+    } },
+    time: { name: '时间', base: '秒', units: {
+      '毫秒 ms': 0.001, '秒 s': 1, '分钟 min': 60, '小时 h': 3600, '天 d': 86400, '周': 604800
+    } },
+    temp: { name: '温度', base: '开尔文', units: {
+      '摄氏度 °C': 1, '华氏度 °F': 1, '开尔文 K': 1
+    } }
+  };
+
+  var TEMP = {
+    '摄氏度 °C': { to: function (v) { return v + 273.15; }, from: function (k) { return k - 273.15; } },
+    '华氏度 °F': { to: function (v) { return (v - 32) * 5 / 9 + 273.15; }, from: function (k) { return (k - 273.15) * 9 / 5 + 32; } },
+    '开尔文 K': { to: function (v) { return v; }, from: function (k) { return k; } }
+  };
+
+  function fmtNum(v) {
+    if (typeof v !== 'number' || !isFinite(v)) return '—';
+    if (v === 0) return '0';
+    var a = Math.abs(v);
+    if (a >= 1e12 || a < 1e-6) return v.toExponential(6).replace(/e/, ' × 10^');
+    var n = parseFloat(v.toPrecision(12));
+    return String(n);
+  }
+
+  function fillCats() {
+    var sel = $('cat');
+    sel.innerHTML = '';
+    Object.keys(CATS).forEach(function (k) {
+      var o = document.createElement('option');
+      o.value = k; o.textContent = CATS[k].name;
+      sel.appendChild(o);
+    });
+    sel.value = 'length';
+  }
+
+  function fillUnits() {
+    var cat = CATS[$('cat').value];
+    var sel = $('from');
+    sel.innerHTML = '';
+    Object.keys(cat.units).forEach(function (u) {
+      var o = document.createElement('option');
+      o.value = u; o.textContent = u;
+      sel.appendChild(o);
+    });
+  }
+
+  function convert() {
+    var key = $('cat').value;
+    var cat = CATS[key];
+    var raw = $('val').value.trim().replace(/,/g, '').replace(/，/g, '');
+    var val = parseFloat(raw);
+    var from = $('from').value;
+    var ul = $('out');
+    ul.innerHTML = '';
+
+    if (raw === '' || isNaN(val)) { setStatus($('status'), '请输入一个有效数值。', true); return; }
+
+    var baseVal;
+    if (key === 'temp') {
+      baseVal = TEMP[from].to(val);
+    } else {
+      baseVal = val * cat.units[from];
+    }
+
+    Object.keys(cat.units).forEach(function (u) {
+      var out;
+      if (key === 'temp') out = TEMP[u].from(baseVal);
+      else out = baseVal / cat.units[u];
+
+      var li = document.createElement('li');
+      if (u === from) li.style.background = 'var(--accent-w)';
+
+      var nm = document.createElement('span');
+      nm.className = 'nm';
+      nm.textContent = u;
+
+      var sz = document.createElement('span');
+      sz.className = 'sz';
+      sz.style.cssText = 'font-family:var(--mono);color:var(--text);font-size:13.5px;user-select:all';
+      sz.textContent = fmtNum(out);
+
+      li.appendChild(nm); li.appendChild(sz);
+      li.style.cursor = 'pointer';
+      li.title = '点击复制';
+      li.onclick = function () { copyText(fmtNum(out), '已复制 ' + fmtNum(out)); };
+      ul.appendChild(li);
+    });
+
+    setStatus($('status'), CATS[key].name + '：' + fmtNum(val) + ' ' + from + ' 的换算结果如上，点击任意行可复制。');
+  }
+
+  fillCats(); fillUnits(); convert();
+
+  $('cat').addEventListener('change', function () { fillUnits(); convert(); });
+  $('val').addEventListener('input', convert);
+  $('from').addEventListener('change', convert);
+})();
+</script>
+</body>
+</html>

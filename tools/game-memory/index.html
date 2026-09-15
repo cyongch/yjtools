@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>记忆翻牌 - 在线翻牌配对游戏 | 即用工具箱</title>
+<meta name="description" content="免费在线记忆翻牌游戏：翻开卡片找出所有相同配对，三种难度可选，记录步数与用时。纯本地运行、打开即玩，适合放松与专注力训练。">
+<meta name="keywords" content="记忆翻牌,翻牌配对,记忆游戏,在线小游戏,专注力训练,配对游戏,memory game">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+<style>
+  #board{display:grid;gap:9px;width:min(100%,460px);margin:0 auto;user-select:none}
+  .card{aspect-ratio:1;perspective:700px;cursor:pointer}
+  .card .inner{position:relative;width:100%;height:100%;transition:transform .34s;transform-style:preserve-3d}
+  .card.open .inner{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;
+        border-radius:10px;font-size:clamp(17px,5.2vw,30px);font-weight:600}
+  .back{background:var(--accent);color:#fff;font-size:clamp(13px,3.6vw,20px)}
+  .front{background:var(--surface-2);border:1px solid var(--border);transform:rotateY(180deg);color:var(--accent)}
+  .card.matched .front{background:var(--accent-w);border-color:var(--accent-b)}
+  .card.matched{cursor:default}
+  .hud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .hud div{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 16px;text-align:center;min-width:88px}
+  .hud b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+  .hud span{font-size:12px;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#game">小游戏</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>小游戏 · 减压<span>/</span>记忆翻牌</nav>
+
+  <div class="tool-head">
+    <h1>记忆翻牌</h1>
+    <p class="lead">每次翻两张，找出所有相同的配对。翻错的牌会合上，考验短期记忆。</p>
+  </div>
+
+  <div class="note"><b>纯本地运行</b><span>牌面随机与判定均在本机完成，不联网。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="level">难度</label>
+        <select id="level">
+          <option value="4x4" selected>4 × 4（8 对，轻松）</option>
+          <option value="4x5">4 × 5（10 对，标准）</option>
+          <option value="6x6">6 × 6（18 对，挑战）</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+        <button class="btn primary" id="btnNew">重新开始</button>
+      </div>
+    </div>
+
+    <div class="hud" style="margin-top:16px">
+      <div><b id="moves">0</b><span>翻牌次数</span></div>
+      <div><b id="time">0</b><span>用时（秒）</span></div>
+      <div><b id="pairs">0 / 8</b><span>已配对</span></div>
+    </div>
+
+    <div id="board"></div>
+
+    <p id="status" class="hint" style="text-align:center">点击卡片翻开，两张相同即配对成功。</p>
+  </section>
+
+  <section class="prose">
+    <h2>玩法</h2>
+    <p>所有卡片背面朝上摆放。每次点击翻开两张：如果图案相同，这两张会保持翻开并记为配对成功；如果不同，它们会在短暂显示后自动合上，你需要记住它们的位置，在后续翻牌中配对。</p>
+    <p>当所有卡片都配对完成，本局结束。<strong>步数越少、用时越短，说明记忆效率越高。</strong></p>
+
+    <h2>难度选择</h2>
+    <ul>
+      <li><strong>4 × 4 · 8 对</strong>：约一两分钟完成，适合碎片时间。</li>
+      <li><strong>4 × 5 · 10 对</strong>：牌面稍多，需要开始有意识地记位置。</li>
+      <li><strong>6 × 6 · 18 对</strong>：容量接近短期记忆的上限，必须借助位置规律与分组记忆。</li>
+    </ul>
+
+    <h2>玩的技巧</h2>
+    <ul>
+      <li><strong>按顺序翻</strong>：从左上角开始一行一行推进，比随机点更容易建立位置记忆。</li>
+      <li><strong>不要只记图案，要记位置</strong>：大脑对"第 3 行第 2 个是星星"这种空间信息的记忆，比"刚才见过星星"更牢固。</li>
+      <li><strong>翻到新牌时出声念出来</strong>：把视觉信息转成语言，记忆强度明显提升。</li>
+      <li><strong>中途不要换策略</strong>：一会儿按行、一会儿随机，会把已建立的空间印象打乱。</li>
+    </ul>
+
+    <h2>为什么它适合放松</h2>
+    <p>这个游戏没有时间压力、不会"输"，唯一的反馈是配对成功时的那一下翻转动画。它占据的注意力刚好够让你从手头的事情里抽离出来，又不需要像解谜那样绷紧神经——这正是短暂休息时最需要的强度。</p>
+  </section>
+
+  <section class="related" id="related" data-current="game-memory" data-cat="game"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var SYMS = ['★', '♥', '♦', '♣', '♠', '●', '▲', '■', '◆', '✦', '✚', '☯', '☀', '☂', '♫', '✈', '⚑', '✿'];
+  var cols = 4, rows = 4, cards = [], first = -1, lock = false;
+  var moves = 0, secs = 0, matched = 0, timer = null, started = false, total = 8;
+
+  function parseLevel() {
+    var v = $('level').value.split('x');
+    cols = parseInt(v[0], 10);
+    rows = parseInt(v[1], 10);
+    total = (cols * rows) / 2;
+  }
+
+  function reset() {
+    parseLevel();
+    var pool = SYMS.slice(0, total);
+    var deck = pool.concat(pool);
+    for (var i = deck.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+    }
+    cards = deck.map(function (s) { return { sym: s, open: false, matched: false }; });
+    first = -1; lock = false; moves = 0; secs = 0; matched = 0; started = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    $('time').textContent = '0';
+    $('pairs').textContent = '0 / ' + total;
+    $('status').textContent = '点击卡片翻开，两张相同即配对成功。';
+    build();
+  }
+
+  function build() {
+    var b = $('board');
+    b.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+    b.innerHTML = '';
+    cards.forEach(function (c, i) {
+      var d = document.createElement('div');
+      d.className = 'card';
+      d.dataset.i = String(i);
+      var inner = document.createElement('div');
+      inner.className = 'inner';
+      var back = document.createElement('div');
+      back.className = 'face back';
+      back.textContent = '?';
+      var front = document.createElement('div');
+      front.className = 'face front';
+      front.textContent = c.sym;
+      inner.appendChild(back);
+      inner.appendChild(front);
+      d.appendChild(inner);
+      b.appendChild(d);
+    });
+    render();
+  }
+
+  function render() {
+    var b = $('board').children;
+    for (var i = 0; i < cards.length; i++) {
+      var el = b[i];
+      el.classList.toggle('open', cards[i].open || cards[i].matched);
+      el.classList.toggle('matched', cards[i].matched);
+    }
+    $('moves').textContent = moves;
+    $('pairs').textContent = matched + ' / ' + total;
+  }
+
+  function startTimer() {
+    if (started) return;
+    started = true;
+    timer = setInterval(function () {
+      secs++;
+      $('time').textContent = secs;
+    }, 1000);
+  }
+
+  $('board').addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target.closest('.card') : null;
+    if (!el) return;
+    var i = parseInt(el.dataset.i, 10);
+    if (lock || cards[i].matched || cards[i].open || i === first) return;
+
+    startTimer();
+    cards[i].open = true;
+    render();
+
+    if (first === -1) { first = i; return; }
+
+    moves++;
+    var a = cards[first], b2 = cards[i];
+    if (a.sym === b2.sym) {
+      a.matched = b2.matched = true;
+      first = -1;
+      matched++;
+      render();
+      if (matched === total) {
+        if (timer) { clearInterval(timer); timer = null; }
+        $('status').textContent = '全部配对完成！用了 ' + moves + ' 次翻牌、' + secs + ' 秒。';
+        toast('完成！' + moves + ' 次 / ' + secs + ' 秒');
+      }
+    } else {
+      lock = true;
+      var i1 = first;
+      setTimeout(function () {
+        cards[i1].open = false;
+        cards[i].open = false;
+        first = -1; lock = false;
+        render();
+      }, 680);
+    }
+    render();
+  });
+
+  $('btnNew').onclick = function () { reset(); toast('新的一局'); };
+  $('level').addEventListener('change', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文本对比工具 - 在线逐行比对差异，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线文本对比工具，逐行比对两段文本的差异，新增行与删除行高亮显示，可忽略大小写与空白。适合比对合同版本、清单变化、代码差异。纯本地运行不上传。">
+<meta name="keywords" content="文本对比,文本比较,差异对比,diff工具,在线对比,合同版本对比,清单对比">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>文本与编码<span>/</span>文本对比</nav>
+
+  <div class="tool-head">
+    <h1>文本对比</h1>
+    <p class="lead">把两段文本逐行比对，新增、删除、修改的位置一目了然。适合核对合同前后版本、清单调整记录。</p>
+  </div>
+
+  <div class="note"><b>数据不上传</b><span>比对算法在本页面内运行，文本内容不会离开你的电脑。</span></div>
+
+  <section class="panel">
+    <div class="grid2">
+      <div>
+        <label class="fl" for="a">原文（旧版本）</label>
+        <textarea id="a" spellcheck="false"></textarea>
+      </div>
+      <div>
+        <label class="fl" for="b">新文（新版本）</label>
+        <textarea id="b" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="btns" style="margin-top:14px">
+      <button class="btn primary" id="btnDiff">开始对比</button>
+      <button class="btn" id="btnSwap">左右互换</button>
+      <button class="btn" id="btnSample">载入示例</button>
+      <button class="btn" id="btnCopyDiff">复制差异报告</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="btns" style="margin-top:12px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2)">
+        <input type="checkbox" id="igCase"> 忽略大小写
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2)">
+        <input type="checkbox" id="igSpace"> 忽略行首行尾空白
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2)">
+        <input type="checkbox" id="igBlank" checked> 忽略空行
+      </label>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <div class="diff-view" id="view" style="margin-top:14px">点击「开始对比」查看差异结果</div>
+  </section>
+
+  <section class="prose">
+    <h2>典型使用场景</h2>
+    <ul>
+      <li><strong>合同版本核对</strong>：拿到对方回传的修改稿，与你手上的版本比一遍，改动了哪几条一眼可见。</li>
+      <li><strong>清单调整复核</strong>：审核版与送审版清单对比，确认哪些子目被增删或单价被调整。</li>
+      <li><strong>文件内容校验</strong>：确认导出文件与源文件内容一致，排除漏行、错行。</li>
+      <li><strong>代码与配置比对</strong>：排查配置文件被谁改了哪一行。</li>
+    </ul>
+
+    <h2>比对逻辑说明</h2>
+    <p>采用逐行比对算法（最长公共子序列），而不是简单的字符串比较。这意味着当你在中间插入一段内容时，后面未改动的行不会被误判为"全文都变了"。绿色为新增行，红色为删除行，灰色为上下文折叠提示。</p>
+    <p>三个忽略选项会影响判定结果但不会改动你输入的内容：勾选「忽略大小写」后 <code>ABC</code> 与 <code>abc</code> 视为相同；勾选「忽略行首行尾空白」后缩进变化不计入差异。</p>
+
+    <h2>数据安全</h2>
+    <p>整个比对在浏览器内存中完成，页面不产生任何网络请求。涉及未公开的报价、合同条款时可直接使用。</p>
+  </section>
+
+  <section class="related" id="related" data-current="text-diff" data-cat="text"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/diff.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var viewEl = $('view'), statsEl = $('stats');
+  var lastReport = '';
+
+  function norm(line) {
+    var s = line;
+    if ($('igSpace').checked) s = s.trim();
+    if ($('igCase').checked) s = s.toLowerCase();
+    return s;
+  }
+
+  function prepare(text) {
+    var lines = text.replace(/\r\n?/g, '\n').split('\n');
+    if ($('igBlank').checked) lines = lines.filter(function (l) { return l.trim() !== ''; });
+    return lines;
+  }
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function run() {
+    var textA = $('a').value, textB = $('b').value;
+    if (!textA && !textB) { toast('请先输入要对比的两段文本', 'err'); return; }
+
+    var linesA = prepare(textA), linesB = prepare(textB);
+    var normA = linesA.map(norm), normB = linesB.map(norm);
+
+    var parts = Diff.diffArrays(normA, normB);
+
+    var html = '', report = [], add = 0, del = 0, same = 0;
+    var ia = 0, ib = 0;
+
+    parts.forEach(function (p) {
+      var n = p.value.length;
+      if (p.added) {
+        for (var i = 0; i < n; i++) {
+          var t = linesB[ib + i];
+          html += '<div class="add">+ ' + esc(t) + '</div>';
+          report.push('+ ' + t);
+        }
+        add += n; ib += n;
+      } else if (p.removed) {
+        for (var j = 0; j < n; j++) {
+          var t2 = linesA[ia + j];
+          html += '<div class="del">- ' + esc(t2) + '</div>';
+          report.push('- ' + t2);
+        }
+        del += n; ia += n;
+      } else {
+        same += n;
+        // 相同内容超过 6 行时折叠中间部分
+        if (n > 6) {
+          html += '<div class="sk">  ' + esc(linesA[ia]) + '</div>';
+          html += '<div class="sk">  …… 中间 ' + (n - 2) + ' 行相同，已折叠 ……</div>';
+          html += '<div class="sk">  ' + esc(linesA[ia + n - 1]) + '</div>';
+        } else {
+          for (var k = 0; k < n; k++) {
+            html += '<div>  ' + esc(linesA[ia + k]) + '</div>';
+          }
+        }
+        ia += n; ib += n;
+      }
+    });
+
+    viewEl.innerHTML = html || '<div class="sk">  两段文本完全一致</div>';
+
+    var total = add + del;
+    var rate = Math.max(same + del, 1);
+    statsEl.innerHTML =
+      '<div class="stat"><b>' + add + '</b><span>新增行</span></div>' +
+      '<div class="stat"><b>' + del + '</b><span>删除行</span></div>' +
+      '<div class="stat"><b>' + same + '</b><span>相同行</span></div>' +
+      '<div class="stat"><b>' + (total ? (del / rate * 100).toFixed(1) + '%' : '0%') + '</b><span>变化比例</span></div>';
+
+    lastReport = report.length ? report.join('\n') : '（两段文本完全一致，无差异）';
+    if (total === 0) toast('两段文本完全一致');
+  }
+
+  $('btnDiff').onclick = run;
+  ['igCase', 'igSpace', 'igBlank'].forEach(function (id) {
+    $(id).addEventListener('change', function () { if (viewEl.dataset.done) run(); });
+  });
+
+  $('btnSwap').onclick = function () {
+    var t = $('a').value; $('a').value = $('b').value; $('b').value = t;
+    run();
+  };
+
+  $('btnSample').onclick = function () {
+    $('a').value = '序号\t项目名称\t单位\t数量\n1\t土方开挖\tm3\t1250.00\n2\t混凝土垫层\tm3\t86.50\n3\t钢筋制安\tt\t42.30\n4\t模板工程\tm2\t960.00\n5\t脚手架\tm2\t1180.00';
+    $('b').value = '序号\t项目名称\t单位\t数量\n1\t土方开挖\tm3\t1250.00\n2\t混凝土垫层\tm3\t92.80\n3\t钢筋制安\tt\t42.30\n4\t模板工程\tm2\t960.00\n5\t脚手架（综合）\tm2\t1180.00\n6\t防水工程\tm2\t320.00';
+    run();
+  };
+
+  $('btnCopyDiff').onclick = function () {
+    if (!lastReport) { toast('请先执行对比', 'err'); return; }
+    copyText(lastReport, '差异报告已复制');
+  };
+
+  $('btnClear').onclick = function () {
+    $('a').value = ''; $('b').value = '';
+    viewEl.textContent = '点击「开始对比」查看差异结果';
+    statsEl.innerHTML = ''; lastReport = '';
+  };
+
+  viewEl.addEventListener('click', function () { /* 占位，保持可聚焦 */ });
+})();
+</script>
+</body>
+</html>

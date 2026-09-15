@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图片加水印 - 在线批量添加文字水印，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线图片加水印工具，支持文字水印、九宫格定位、斜向平铺、透明度与字号调节，实时预览，批量导出。图片本地处理不上传，适合给报价单、图纸截图加标识。">
+<meta name="keywords" content="图片加水印,在线加水印,文字水印,批量加水印,图片水印工具,报价单加密级">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>图片处理<span>/</span>图片加水印</nav>
+
+  <div class="tool-head">
+    <h1>图片加水印</h1>
+    <p class="lead">给图片叠加文字水印，位置、字号、颜色、透明度、平铺密度都可调，改参数即时预览。</p>
+  </div>
+
+  <div class="note"><b>图片不上传</b><span>水印由浏览器绘制，原图与成品都不会离开本机，适合处理内部报价单与图纸截图。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把图片拖到这里，或点击选择</strong>
+      <small>第一张用于实时预览，全部图片按同一套水印参数批量输出</small>
+    </div>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div style="flex:2 1 260px">
+        <label class="fl" for="text">水印文字</label>
+        <input type="text" id="text" placeholder="例如：仅供投标使用 / 内部资料 严禁外传">
+      </div>
+      <div>
+        <label class="fl" for="size">字号（px，相对原图）</label>
+        <input type="number" id="size" value="48" min="8" max="400" step="2">
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <div>
+        <label class="fl" for="color">颜色</label>
+        <select id="color">
+          <option value="#ff0000">红色</option>
+          <option value="#000000" selected>黑色</option>
+          <option value="#ffffff">白色</option>
+          <option value="#888888">灰色</option>
+          <option value="#0066cc">蓝色</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="pos">位置</label>
+        <select id="pos">
+          <option value="0">左上角</option>
+          <option value="1">顶部居中</option>
+          <option value="2">右上角</option>
+          <option value="3">左侧居中</option>
+          <option value="4" selected>正中</option>
+          <option value="5">右侧居中</option>
+          <option value="6">左下角</option>
+          <option value="7">底部居中</option>
+          <option value="8">右下角</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <label class="fl" for="alpha">透明度：<span id="aval">30</span>%</label>
+      <input type="range" id="alpha" min="5" max="100" value="30" step="5" style="width:100%;max-width:420px">
+    </div>
+    <div style="margin-top:10px">
+      <label class="fl" for="rotate">旋转角度：<span id="rval">0</span>°</label>
+      <input type="range" id="rotate" min="-90" max="90" value="0" step="5" style="width:100%;max-width:420px">
+    </div>
+
+    <div class="btns" style="margin-top:14px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2)">
+        <input type="checkbox" id="tile"> 斜向平铺（防截图盗用，建议配 30° 与 30% 透明度）
+      </label>
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>批量添加水印</button>
+      <button class="btn" id="btnZip" disabled>打包下载 ZIP</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <ul class="files" id="out"></ul>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="panel">
+    <label class="fl">实时预览</label>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;overflow:auto">
+      <canvas id="preview" style="max-width:100%;border-radius:6px"></canvas>
+      <p class="hint" id="pv-hint" style="margin-top:10px">选择图片后在此预览水印效果</p>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h2>水印参数怎么配</h2>
+    <ul>
+      <li><strong>单角标识</strong>：位置选右下角，字号约图片宽度的 3%–5%，透明度 50%–60%。既明确来源，又不遮挡内容。</li>
+      <li><strong>防外传</strong>：勾选「斜向平铺」，角度 30°，透明度 25%–35%，字号约宽度的 4%。整张图铺满淡色文字，截图后依然可辨认来源。</li>
+      <li><strong>密级标识</strong>：位置选正中，红色，透明度 15%–20%，字号约宽度的 8%。类似图纸"内部资料"的盖章效果。</li>
+      <li><strong>深色底图</strong>：把颜色改为白色，透明度调至 40% 以上，否则看不清。</li>
+    </ul>
+
+    <h2>关于字号</h2>
+    <p>字号以<strong>原图像素</strong>为单位，而不是屏幕显示大小。同一套参数应用到不同尺寸的图片上，文字占画面的比例会略有差异——比如 48px 的字在 1200px 宽的图上约占 4%，在 3000px 宽的图上只占 1.6%。批量处理时如需比例一致，建议按图片宽度分组处理。</p>
+
+    <h2>提示</h2>
+    <p>水印是绘制在图片像素上的，一旦保存就无法通过本工具去除（原图不受影响，可重新处理）。如果需要"看起来有、实际能去掉"的水印，那属于需要服务端支持的图层方案，纯浏览器工具做不到，请勿混淆。</p>
+
+    <h2>数据安全</h2>
+    <p>预览与导出全部在本机完成，图片不经过任何服务器。可断网使用。</p>
+  </section>
+
+  <section class="related" id="related" data-current="image-watermark" data-cat="image"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/fflate.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var files = [], results = [], statusEl = $('status');
+  var firstImg = null, timer = null;
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+  function extOf(type) { return type === 'image/png' ? '.png' : type === 'image/webp' ? '.webp' : '.jpg'; }
+
+  function paint(ctx, W, H, scale) {
+    var text = $('text').value;
+    if (!text) return;
+    var size = (parseInt($('size').value, 10) || 48) * scale;
+    var alpha = (parseInt($('alpha').value, 10) || 30) / 100;
+    var rot = (parseInt($('rotate').value, 10) || 0) * Math.PI / 180;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = $('color').value;
+    ctx.font = '500 ' + Math.max(6, size) + 'px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if ($('tile').checked) {
+      var tw = ctx.measureText(text).width;
+      var stepX = tw + size * 3;
+      var stepY = size * 5;
+      ctx.translate(W / 2, H / 2);
+      ctx.rotate(rot);
+      ctx.translate(-W / 2, -H / 2);
+      for (var y = -H * 0.5; y < H * 1.5; y += stepY) {
+        for (var x = -W * 0.5; x < W * 1.5; x += stepX) {
+          ctx.fillText(text, x, y);
+        }
+      }
+      ctx.restore();
+      return;
+    }
+
+    var pad = size * 1.4 + 10;
+    var idx = parseInt($('pos').value, 10);
+    var xs = [pad, W / 2, W - pad];
+    var ys = [pad, H / 2, H - pad];
+    ctx.translate(xs[idx % 3], ys[Math.floor(idx / 3)]);
+    ctx.rotate(rot);
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  }
+
+  function drawPreview() {
+    var cv = $('preview');
+    if (!firstImg) { cv.width = 0; cv.height = 0; return; }
+    var maxW = 620;
+    var scale = Math.min(1, maxW / firstImg.naturalWidth);
+    cv.width = Math.max(1, Math.round(firstImg.naturalWidth * scale));
+    cv.height = Math.max(1, Math.round(firstImg.naturalHeight * scale));
+    var ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(firstImg, 0, 0, cv.width, cv.height);
+    paint(ctx, cv.width, cv.height, scale);
+    $('pv-hint').textContent = '原始尺寸 ' + firstImg.naturalWidth + ' × ' + firstImg.naturalHeight +
+      ' px（预览已等比缩小显示，导出的是原尺寸）';
+  }
+
+  function schedule() { clearTimeout(timer); timer = setTimeout(drawPreview, 90); }
+
+  ['text', 'size', 'color', 'pos', 'alpha', 'rotate', 'tile'].forEach(function (id) {
+    $(id).addEventListener('input', schedule);
+    $(id).addEventListener('change', schedule);
+  });
+  $('alpha').addEventListener('input', function () { $('aval').textContent = this.value; });
+  $('rotate').addEventListener('input', function () { $('rval').textContent = this.value; });
+
+  function refresh() {
+    renderFileList($('list'), files, function (i) {
+      files.splice(i, 1);
+      if (i === 0) { firstImg = null; }
+      refresh();
+      if (!firstImg && files.length) loadFirst();
+      else drawPreview();
+    });
+    $('btnRun').disabled = files.length === 0;
+  }
+
+  function loadFirst() {
+    if (!files.length) return;
+    readAsDataURL(files[0]).then(loadImage).then(function (img) {
+      firstImg = img; drawPreview();
+      setStatus(statusEl, '已选择 ' + files.length + ' 张图片。');
+    }).catch(function (e) { setStatus(statusEl, '预览失败：' + e.message, true); });
+  }
+
+  function renderOut() {
+    var ul = $('out');
+    ul.innerHTML = '';
+    results.forEach(function (r) {
+      var li = document.createElement('li');
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name;
+      var sz = document.createElement('span'); sz.className = 'sz'; sz.textContent = fmtSize(r.blob.size);
+      var btn = document.createElement('button');
+      btn.className = 'btn sm';
+      btn.style.cssText = 'height:28px;padding:0 12px;font-size:12.5px;flex:none';
+      btn.textContent = '下载';
+      btn.onclick = function () { saveBlob(r.blob, r.name); };
+      li.appendChild(nm); li.appendChild(sz); li.appendChild(btn);
+      ul.appendChild(li);
+    });
+  }
+
+  async function markOne(file) {
+    var img = await loadImage(await readAsDataURL(file));
+    var cv = document.createElement('canvas');
+    cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    var ctx = cv.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    paint(ctx, cv.width, cv.height, 1);
+    var fmt = file.type === 'image/png' ? 'image/png' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+    var blob = await new Promise(function (res) { cv.toBlob(res, fmt, 0.92); });
+    if (!blob) throw new Error('处理失败：' + file.name);
+    return { blob: blob, name: baseName(file.name) + '_wm' + extOf(fmt) };
+  }
+
+  $('btnRun').onclick = async function () {
+    if (!files.length) return;
+    if (!$('text').value.trim()) { toast('请先填写水印文字', 'err'); return; }
+    var btn = this; btn.disabled = true;
+    results = [];
+    for (var i = 0; i < files.length; i++) {
+      setStatus(statusEl, '正在处理 ' + (i + 1) + ' / ' + files.length + ' …');
+      try { results.push(await markOne(files[i])); }
+      catch (e) { setStatus(statusEl, '第 ' + (i + 1) + ' 张失败：' + e.message, true); }
+      await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    renderOut();
+    setStatus(statusEl, '水印添加完成，共 ' + results.length + ' 张。');
+    btn.disabled = false;
+    $('btnZip').disabled = results.length === 0;
+  };
+
+  $('btnZip').onclick = function () {
+    if (!results.length) return;
+    Promise.all(results.map(function (r) {
+      return r.blob.arrayBuffer().then(function (b) { return { name: r.name, data: new Uint8Array(b) }; });
+    })).then(function (items) {
+      var o = {};
+      items.forEach(function (it) { o[it.name] = it.data; });
+      saveBlob(new Blob([fflate.zipSync(o, { level: 0 })], { type: 'application/zip' }), 'watermarked-images.zip');
+      toast('已打包 ' + items.length + ' 张图片');
+    }).catch(function (e) { toast('打包失败：' + e.message, 'err'); });
+  };
+
+  $('btnClear').onclick = function () {
+    files = []; results = []; firstImg = null;
+    refresh(); renderOut(); drawPreview();
+    setStatus(statusEl, '');
+  };
+
+  bindDrop($('drop'), $('file'), function (fs) {
+    var imgs = fs.filter(function (f) { return /^image\//.test(f.type); });
+    if (!imgs.length) return;
+    var wasEmpty = files.length === 0;
+    imgs.forEach(function (f) { files.push(f); });
+    refresh();
+    if (wasEmpty) loadFirst(); else drawPreview();
+  });
+
+  refresh();
+  $('text').value = '内部资料';
+  $('aval').textContent = $('alpha').value;
+  $('rval').textContent = $('rotate').value;
+})();
+</script>
+</body>
+</html>

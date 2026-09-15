@@ -1,0 +1,11 @@
+/*
+  Cache-Control: no-cache, must-revalidate
+
+/assets/*
+  Cache-Control: no-cache, must-revalidate
+
+/tools/*
+  Cache-Control: no-cache, must-revalidate
+
+/vendor/*
+  Cache-Control: public, max-age=604800

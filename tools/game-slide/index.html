@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数字华容道 - 在线滑块拼图，3×3 到 5×5 | 即用工具箱</title>
+<meta name="description" content="免费在线数字华容道（滑块拼图）：3×3、4×4、5×5 三种规格，保证有解，滑动数字按顺序排好即可通关。记录步数与用时。打开即玩。">
+<meta name="keywords" content="数字华容道,滑块拼图,15puzzle,数字推盘,在线拼图游戏,9宫格数字,益智小游戏">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+<style>
+  #board{display:grid;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;
+         padding:10px;width:min(100%,420px);margin:0 auto;user-select:none;touch-action:manipulation}
+  .tl{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;cursor:pointer;
+      font-weight:700;font-variant-numeric:tabular-nums;transition:transform .08s,background .1s;
+      background:var(--accent);color:#fff;font-size:clamp(15px,5vw,28px)}
+  .tl:hover{filter:brightness(1.08)}
+  .tl:active{transform:scale(.95)}
+  .tl.blank{background:transparent;cursor:default;box-shadow:inset 0 0 0 1px var(--border)}
+  .tl.ok{background:var(--accent);}
+  .tl.movable{box-shadow:0 0 0 2px var(--accent-b) inset}
+  .hud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .hud div{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 16px;text-align:center;min-width:88px}
+  .hud b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+  .hud span{font-size:12px;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#game">小游戏</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>小游戏 · 减压<span>/</span>数字华容道</nav>
+
+  <div class="tool-head">
+    <h1>数字华容道</h1>
+    <p class="lead">点方块把它滑进空位，最终让数字 1 到 N 依次排好，空格留在右下角。</p>
+  </div>
+
+  <div class="note"><b>纯本地运行</b><span>打乱与判定全部在本机完成，保证每一局都有解。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="size">规格</label>
+        <select id="size">
+          <option value="3">3 × 3（入门）</option>
+          <option value="4" selected>4 × 4（经典）</option>
+          <option value="5">5 × 5（挑战）</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end;gap:9px">
+        <button class="btn primary" id="btnNew">重新打乱</button>
+        <button class="btn" id="btnHint">显示目标顺序</button>
+      </div>
+    </div>
+
+    <div class="hud" style="margin-top:16px">
+      <div><b id="steps">0</b><span>步数</span></div>
+      <div><b id="time">0</b><span>用时（秒）</span></div>
+      <div><b id="right">0</b><span>已归位</span></div>
+    </div>
+
+    <div id="board"></div>
+
+    <p id="status" class="hint" style="text-align:center">点击与空格相邻的数字即可滑动。带高亮的方块表示可以点击。</p>
+  </section>
+
+  <section class="prose">
+    <h2>玩法</h2>
+    <p>棋盘上有一个空格，只有<strong>与空格上下左右相邻</strong>的数字可以滑进空格。通过不断滑动，让数字按 1、2、3…… 的顺序从左到右、从上到下排好，最后空格落在右下角，即完成。</p>
+    <p>页面会把当前可点击的方块用边框高亮出来，避免误点。</p>
+
+    <h2>为什么不会出现"无解"</h2>
+    <p>滑块拼图有一个著名的数学性质：并不是所有排列都能通过滑动还原，大约有一半的初始排列是死局。手工打乱很容易造出无解局面，这也是很多在线版本让人白费力气的原因。</p>
+    <p>本工具采用<strong>逆向打乱</strong>——从已解状态出发，反向随机滑动若干步。因为每一步都是合法移动，所以按原路反推必然能还原，<strong>每一局都保证有解</strong>。</p>
+
+    <h2>常用技巧</h2>
+    <ul>
+      <li><strong>先排第一行</strong>：把 1、2、3 依次推到顶行，注意给后面的数字留出活动空间。</li>
+      <li><strong>再排第一列</strong>：顶行完成后，接着把 4、8 这些左列的数字归位。</li>
+      <li><strong>大格局优先</strong>：先把前两行两列排好，剩下的 2×2 或 3×3 区域用局部旋转解决，比逐格硬推快得多。</li>
+      <li><strong>不要频繁破坏已归位的部分</strong>：迫不得已动了已经排好的行，记得马上把它还原回去。</li>
+    </ul>
+
+    <h2>各规格难度参考</h2>
+    <ul>
+      <li>3×3：8 格，通常一两分钟能完成，适合随手玩。</li>
+      <li>4×4：经典的"15 拼图"，需要几分钟到十几分钟。</li>
+      <li>5×5：24 格，没有章法很容易越搞越乱，建议先理清分层策略。</li>
+    </ul>
+  </section>
+
+  <section class="related" id="related" data-current="game-slide" data-cat="game"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var N = 4, tiles = [], blank = 0, steps = 0, secs = 0, timer = null, started = false, solved = false;
+
+  function reset() {
+    N = parseInt($('size').value, 10);
+    $('board').style.gridTemplateColumns = 'repeat(' + N + ', 1fr)';
+    tiles = [];
+    for (var i = 1; i < N * N; i++) tiles.push(i);
+    tiles.push(0);
+    blank = N * N - 1;
+
+    // 逆向打乱：从已解状态反向滑动，保证有解
+    var guard = 0;
+    do {
+      var last = -1;
+      var times = N * N * 40;
+      for (var k = 0; k < times; k++) {
+        var nb = neighborsOf(blank);
+        var pick = nb[Math.floor(Math.random() * nb.length)];
+        if (pick === last) continue;
+        tiles[blank] = tiles[pick];
+        tiles[pick] = 0;
+        last = blank;
+        blank = pick;
+      }
+      guard++;
+    } while (isSolved() && guard < 5);
+
+    steps = 0; secs = 0; started = false; solved = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    $('time').textContent = '0';
+    $('status').textContent = '点击与空格相邻的数字即可滑动。带高亮的方块表示可以点击。';
+    render();
+  }
+
+  function neighborsOf(i) {
+    var x = i % N, y = Math.floor(i / N), out = [];
+    if (x > 0) out.push(i - 1);
+    if (x < N - 1) out.push(i + 1);
+    if (y > 0) out.push(i - N);
+    if (y < N - 1) out.push(i + N);
+    return out;
+  }
+
+  function isSolved() {
+    for (var i = 0; i < N * N - 1; i++) if (tiles[i] !== i + 1) return false;
+    return tiles[N * N - 1] === 0;
+  }
+
+  function render() {
+    var b = $('board');
+    b.innerHTML = '';
+    for (var i = 0; i < N * N; i++) {
+      var d = document.createElement('div');
+      var v = tiles[i];
+      d.className = 'tl' + (v === 0 ? ' blank' : '');
+      d.textContent = v === 0 ? '' : v;
+      if (v !== 0 && neighborsOf(blank).indexOf(i) >= 0) d.classList.add('movable');
+      d.dataset.i = String(i);
+      b.appendChild(d);
+    }
+    var ok = 0;
+    for (var j = 0; j < N * N - 1; j++) if (tiles[j] === j + 1) ok++;
+    $('steps').textContent = steps;
+    $('right').textContent = ok + ' / ' + (N * N - 1);
+  }
+
+  function tickTimer() {
+    if (!started || solved) return;
+    secs++;
+    $('time').textContent = secs;
+  }
+
+  $('board').addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t.classList.contains('tl') || solved) return;
+    var i = parseInt(t.dataset.i, 10);
+    if (tiles[i] === 0) return;
+    if (neighborsOf(blank).indexOf(i) < 0) {
+      toast('只能滑动与空格相邻的方块', 'err');
+      return;
+    }
+    tiles[blank] = tiles[i];
+    tiles[i] = 0;
+    blank = i;
+    steps++;
+
+    if (!started) {
+      started = true;
+      timer = setInterval(tickTimer, 1000);
+    }
+
+    render();
+
+    if (isSolved()) {
+      solved = true;
+      if (timer) { clearInterval(timer); timer = null; }
+      $('status').textContent = '完成！用了 ' + steps + ' 步、' + secs + ' 秒。';
+      toast('通关！' + steps + ' 步 / ' + secs + ' 秒');
+    }
+  });
+
+  $('btnNew').onclick = function () { reset(); toast('已重新打乱'); };
+  $('btnHint').onclick = function () {
+    var txt = [];
+    for (var y = 0; y < N; y++) {
+      var row = [];
+      for (var x = 0; x < N; x++) {
+        var v = y * N + x + 1;
+        row.push(v === N * N ? '空' : String(v));
+      }
+      txt.push(row.join('  '));
+    }
+    setStatus($('status'), '目标：' + txt.join(' ｜ '));
+  };
+  $('size').addEventListener('change', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>

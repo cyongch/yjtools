@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文本批量处理 - 大小写转换/去重/排序/统计 | 即用工具箱</title>
+<meta name="description" content="在线批量文本处理工具：大小写转换、删除重复行、去空行、行排序、查找替换、全角半角转换、提取数字链接邮箱、字数与字符频率统计。本地运行不上传。">
+<meta name="keywords" content="文本处理,大小写转换,删除重复行,文本排序,去空行,全角半角转换,字数统计,提取链接">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>文本与编码<span>/</span>文本批量处理</nav>
+
+  <div class="tool-head">
+    <h1>文本批量处理</h1>
+    <p class="lead">大小写转换、去重、去空行、排序、批量替换、全角半角互转、内容提取与字数统计，一次点完。</p>
+  </div>
+
+  <div class="note"><b>数据不上传</b><span>所有处理在页面内完成，可放心粘贴合同条款、清单数据。</span></div>
+
+  <section class="panel">
+    <div class="grid2">
+      <div>
+        <label class="fl" for="in">原始文本</label>
+        <textarea id="in" spellcheck="false" placeholder="把要处理的文本粘贴到这里"></textarea>
+      </div>
+      <div>
+        <label class="fl" for="out">处理结果</label>
+        <textarea id="out" spellcheck="false" placeholder="处理后的结果会出现在这里，可直接编辑"></textarea>
+      </div>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+
+    <p class="fl" style="margin-top:20px">大小写转换</p>
+    <div class="btns">
+      <button class="btn sm" data-act="upper">全部大写</button>
+      <button class="btn sm" data-act="lower">全部小写</button>
+      <button class="btn sm" data-act="capital">句首大写</button>
+      <button class="btn sm" data-act="title">单词首字母大写</button>
+      <button class="btn sm" data-act="toggle">反转大小写</button>
+    </div>
+
+    <p class="fl" style="margin-top:18px">清理与去重</p>
+    <div class="btns">
+      <button class="btn sm" data-act="dedupe">删除重复行</button>
+      <button class="btn sm" data-act="blank">删除空行</button>
+      <button class="btn sm" data-act="trim">去行首尾空格</button>
+      <button class="btn sm" data-act="mergews">合并连续空白</button>
+      <button class="btn sm" data-act="nl2sp">换行转空格</button>
+      <button class="btn sm" data-act="sp2nl">空格转换行</button>
+    </div>
+
+    <p class="fl" style="margin-top:18px">排序与顺序</p>
+    <div class="btns">
+      <button class="btn sm" data-act="sortaz">升序 A→Z</button>
+      <button class="btn sm" data-act="sortza">降序 Z→A</button>
+      <button class="btn sm" data-act="sortlen">按行长度</button>
+      <button class="btn sm" data-act="reverse">行顺序反转</button>
+      <button class="btn sm" data-act="num">按数字大小</button>
+    </div>
+
+    <p class="fl" style="margin-top:18px">提取</p>
+    <div class="btns">
+      <button class="btn sm" data-act="exnum">提取数字</button>
+      <button class="btn sm" data-act="exurl">提取链接</button>
+      <button class="btn sm" data-act="exmail">提取邮箱</button>
+      <button class="btn sm" data-act="excn">提取中文</button>
+    </div>
+
+    <p class="fl" style="margin-top:18px">字符与替换</p>
+    <div class="btns">
+      <button class="btn sm" data-act="tohalf">全角转半角</button>
+      <button class="btn sm" data-act="tofull">半角转全角</button>
+      <button class="btn sm" data-act="strip">去所有空白</button>
+      <button class="btn" id="btnReplace">查找替换</button>
+    </div>
+
+    <div class="row" id="replace-box" style="margin-top:12px;display:none">
+      <div><label class="fl" for="find">查找内容</label><input type="text" id="find" placeholder="要查找的文字"></div>
+      <div><label class="fl" for="repl">替换为</label><input type="text" id="repl" placeholder="留空表示删除"></div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end;gap:9px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2)"><input type="checkbox" id="useRe"> 正则</label>
+        <button class="btn sm" id="btnDoRepl">执行替换</button>
+      </div>
+    </div>
+
+    <div class="btns" style="margin-top:20px">
+      <button class="btn" id="btnCopy">复制结果</button>
+      <button class="btn" id="btnSwap">结果回填到原文</button>
+      <button class="btn" id="btnDl">下载 .txt</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+    <p id="status" class="hint">所有操作均以「原始文本」为输入，结果写入右侧，可反复叠加使用。</p>
+  </section>
+
+  <section class="prose">
+    <h2>常见用途</h2>
+    <ul>
+      <li><strong>清单数据清洗</strong>：从系统导出的材料表、清单表常带大量空行和重复行，一键清理后再粘贴进 Excel。</li>
+      <li><strong>材料名称规范</strong>：把混乱的大小写、全角括号、多余空格统一成规范写法。</li>
+      <li><strong>提取关键信息</strong>：从大段文字里批量提取金额数字、网址、邮箱。</li>
+      <li><strong>去重核对</strong>：核对供应商名单、编码列表是否存在重复项。</li>
+      <li><strong>字数统计</strong>：写方案、写公众号文章时快速查看字数构成。</li>
+    </ul>
+
+    <h2>处理逻辑说明</h2>
+    <p>以「行」为基本单位处理，不会跨行合并内容（除非你主动使用「换行转空格」）。「删除重复行」保留首次出现的顺序；「升序 Z→A」按字符编码排序，中文按拼音顺序不受支持（浏览器原生排序规则所限）；「按数字大小」会提取每行中首个数字作为排序依据，适合给编码、序号排序。</p>
+    <p>「全角转半角」会把中文标点之外的ＡＢＣ、１２３、（）等全角字符转成半角，处理从 PDF 或网页复制来的文本时特别有用。</p>
+
+    <h2>数据安全</h2>
+    <p>全部处理由页面内的 JavaScript 完成，不发送任何数据。可断网使用。</p>
+  </section>
+
+  <section class="related" id="related" data-current="text-tools" data-cat="text"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var inEl = $('in'), outEl = $('out'), statusEl = $('status'), statsEl = $('stats');
+
+  function src() { return inEl.value; }
+  function put(text) { outEl.value = text; updateStats(); }
+
+  function updateStats() {
+    var t = outEl.value || '';
+    var cn = (t.match(/[\u4e00-\u9fa5]/g) || []).length;
+    var words = (t.match(/[A-Za-z0-9]+(?:[.'-][A-Za-z0-9]+)*/g) || []).length;
+    var lines = t ? t.split('\n').length : 0;
+    var blank = t ? t.split('\n').filter(function (l) { return !l.trim(); }).length : 0;
+    statsEl.innerHTML =
+      '<div class="stat"><b>' + t.length + '</b><span>总字符数</span></div>' +
+      '<div class="stat"><b>' + cn + '</b><span>中文字数</span></div>' +
+      '<div class="stat"><b>' + words + '</b><span>英文词/数字</span></div>' +
+      '<div class="stat"><b>' + lines + '</b><span>总行数</span></div>' +
+      '<div class="stat"><b>' + (lines - blank) + '</b><span>有效行</span></div>';
+  }
+
+  function lines() { return src().replace(/\r\n?/g, '\n').split('\n'); }
+
+  function toHalf(s) {
+    return s.replace(/[\uFF01-\uFF5E]/g, function (c) {
+      return String.fromCharCode(c.charCodeAt(0) - 0xFEE0);
+    }).replace(/\u3000/g, ' ');
+  }
+  function toFull(s) {
+    return s.replace(/[!-~]/g, function (c) {
+      return String.fromCharCode(c.charCodeAt(0) + 0xFEE0);
+    }).replace(/ /g, '\u3000');
+  }
+
+  var ACTS = {
+    upper: function () { return src().toUpperCase(); },
+    lower: function () { return src().toLowerCase(); },
+    capital: function () {
+      return lines().map(function (l) {
+        var i = l.search(/\S/);
+        if (i < 0) return l;
+        return l.slice(0, i) + l.charAt(i).toUpperCase() + l.slice(i + 1);
+      }).join('\n');
+    },
+    title: function () {
+      return src().replace(/[A-Za-z]+/g, function (w) {
+        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+      });
+    },
+    toggle: function () {
+      return src().replace(/[A-Za-z]/g, function (c) {
+        return c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase();
+      });
+    },
+    dedupe: function () {
+      var seen = {}, out = [];
+      lines().forEach(function (l) { if (!seen[l]) { seen[l] = 1; out.push(l); } });
+      return out.join('\n');
+    },
+    blank: function () { return lines().filter(function (l) { return l.trim() !== ''; }).join('\n'); },
+    trim: function () { return lines().map(function (l) { return l.trim(); }).join('\n'); },
+    mergews: function () { return src().replace(/[ \t\u3000]+/g, ' '); },
+    nl2sp: function () { return src().replace(/\s*\n\s*/g, ' ').trim(); },
+    sp2nl: function () { return src().split(/[ \t\u3000]+/).filter(Boolean).join('\n'); },
+    sortaz: function () { return lines().slice().sort(function (a, b) { return a.localeCompare(b, 'zh-Hans-CN'); }).join('\n'); },
+    sortza: function () { return lines().slice().sort(function (a, b) { return b.localeCompare(a, 'zh-Hans-CN'); }).join('\n'); },
+    sortlen: function () { return lines().slice().sort(function (a, b) { return a.length - b.length; }).join('\n'); },
+    reverse: function () { return lines().slice().reverse().join('\n'); },
+    num: function () {
+      return lines().slice().sort(function (a, b) {
+        var x = parseFloat((a.match(/-?\d+(\.\d+)?/) || [0])[0]);
+        var y = parseFloat((b.match(/-?\d+(\.\d+)?/) || [0])[0]);
+        return x - y;
+      }).join('\n');
+    },
+    exnum: function () { return (src().match(/-?\d+(?:\.\d+)?/g) || []).join('\n'); },
+    exurl: function () { return (src().match(/https?:\/\/[^\s"'<>）)】\]]+/g) || []).join('\n'); },
+    exmail: function () { return (src().match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || []).join('\n'); },
+    excn: function () { return (src().match(/[\u4e00-\u9fa5，。、；：""''（）《》【】？！]+/g) || []).join('\n'); },
+    tohalf: function () { return toHalf(src()); },
+    tofull: function () { return toFull(src()); },
+    strip: function () { return src().replace(/\s+/g, ''); }
+  };
+
+  document.querySelectorAll('[data-act]').forEach(function (b) {
+    b.onclick = function () {
+      if (!src()) { toast('请先粘贴要处理的文本', 'err'); return; }
+      var fn = ACTS[b.dataset.act];
+      if (!fn) return;
+      try {
+        var r = fn();
+        put(r);
+        setStatus(statusEl, b.textContent + ' 完成。结果共 ' + r.split('\n').length + ' 行。');
+      } catch (e) { setStatus(statusEl, '处理失败：' + e.message, true); }
+    };
+  });
+
+  $('btnReplace').onclick = function () {
+    var box = $('replace-box');
+    box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+  };
+
+  $('btnDoRepl').onclick = function () {
+    if (!src()) { toast('请先粘贴要处理的文本', 'err'); return; }
+    var f = $('find').value, r = $('repl').value, n = 0;
+    if (!f) { toast('请填写查找内容', 'err'); return; }
+    try {
+      if ($('useRe').checked) {
+        var re = new RegExp(f, 'g');
+        var m = src().match(re);
+        n = m ? m.length : 0;
+        put(src().replace(re, r));
+      } else {
+        n = src().split(f).length - 1;
+        put(src().split(f).join(r));
+      }
+      setStatus(statusEl, '共替换 ' + n + ' 处。');
+    } catch (e) { setStatus(statusEl, '正则表达式有误：' + e.message, true); }
+  };
+
+  $('btnCopy').onclick = function () {
+    if (!outEl.value) { toast('还没有结果', 'err'); return; }
+    copyText(outEl.value);
+  };
+  $('btnSwap').onclick = function () {
+    inEl.value = outEl.value; outEl.value = '';
+    updateStats();
+    setStatus(statusEl, '已把结果回填为原文，可继续做下一步处理。');
+  };
+  $('btnDl').onclick = function () {
+    if (!outEl.value) { toast('还没有结果', 'err'); return; }
+    saveBlob(new Blob([outEl.value], { type: 'text/plain;charset=utf-8' }), 'text.txt');
+  };
+  $('btnClear').onclick = function () {
+    inEl.value = ''; outEl.value = '';
+    updateStats();
+    setStatus(statusEl, '所有操作均以「原始文本」为输入，结果写入右侧，可反复叠加使用。');
+  };
+
+  outEl.addEventListener('input', updateStats);
+  inEl.addEventListener('input', updateStats);
+  updateStats();
+})();
+</script>
+</body>
+</html>

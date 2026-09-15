@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>贪吃蛇 - 在线经典小游戏，支持手机滑动 | 即用工具箱</title>
+<meta name="description" content="免费在线贪吃蛇游戏：经典玩法，方向键或手机滑动控制，越吃越长越快，记录最高分。打开即玩，无需登录，纯本地运行。">
+<meta name="keywords" content="贪吃蛇,在线贪吃蛇,贪吃蛇游戏,经典小游戏,手机贪吃蛇,snake游戏">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+<style>
+  .snake-wrap{background:#161b21;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;overflow:auto}
+  #cv{max-width:100%;border-radius:8px;display:block;margin:0 auto;touch-action:none;background:#0f1418}
+  .hud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .hud div{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 16px;text-align:center;min-width:88px}
+  .hud b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+  .hud span{font-size:12px;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#game">小游戏</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>小游戏 · 减压<span>/</span>贪吃蛇</nav>
+
+  <div class="tool-head">
+    <h1>贪吃蛇</h1>
+    <p class="lead">吃到食物就变长，撞墙或咬到自己就结束。越吃越快，考验手眼。</p>
+  </div>
+
+  <div class="note"><b>纯本地运行</b><span>游戏逻辑全部在本机运行，不联网。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="speed">初始速度</label>
+        <select id="speed">
+          <option value="150">慢速（悠闲）</option>
+          <option value="110" selected>中速（标准）</option>
+          <option value="75">快速（刺激）</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="wrap">边界处理</label>
+        <select id="wrap">
+          <option value="die" selected>撞墙即结束（经典）</option>
+          <option value="pass">穿墙而过（宽松）</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end;gap:9px">
+        <button class="btn primary" id="btnNew">重新开始</button>
+        <button class="btn" id="btnPause">暂停</button>
+      </div>
+    </div>
+
+    <div class="hud" style="margin-top:16px">
+      <div><b id="score">0</b><span>得分</span></div>
+      <div><b id="best">0</b><span>最高分</span></div>
+      <div><b id="len">3</b><span>长度</span></div>
+    </div>
+
+    <div class="snake-wrap">
+      <canvas id="cv" width="400" height="400"></canvas>
+    </div>
+
+    <p id="status" class="hint" style="text-align:center">方向键或 W A S D 控制，空格暂停；手机上直接在棋盘滑动。</p>
+  </section>
+
+  <section class="prose">
+    <h2>玩法</h2>
+    <p>控制蛇不断前进，吃掉棋盘上的红色食物。每吃一个，蛇身加长一格、得分加 10，并且<strong>移动速度会略微提升</strong>。撞到墙壁（经典模式下）或咬到自己的身体，游戏结束。</p>
+
+    <h2>操作</h2>
+    <ul>
+      <li>电脑：方向键 ↑ ↓ ← → 或 W A S D，空格键暂停 / 继续。</li>
+      <li>手机 / 平板：在棋盘上朝想要的方向滑动。</li>
+      <li>蛇不能直接掉头，所以快速连按左、右是无效的——这是规则限制，不是卡顿。</li>
+    </ul>
+
+    <h2>两种边界模式</h2>
+    <ul>
+      <li><strong>撞墙即结束</strong>：经典街机规则，难度更高，更考验走位。</li>
+      <li><strong>穿墙而过</strong>：从一边出去会从另一边进来，把难度集中在"别咬到自己"上，节奏更从容。</li>
+    </ul>
+
+    <h2>小技巧</h2>
+    <ul>
+      <li>别急着追食物，先让蛇沿着边缘绕圈，把身体盘成有序的形状。</li>
+      <li>食物在角落时最危险，提前判断好进出路线再过去。</li>
+      <li>蛇越长越容易咬到自己，吃满一整屏后主动"绕大圈"比走直线安全。</li>
+      <li>觉得太快顶不住时，按空格暂停一下，观察清楚再继续。</li>
+    </ul>
+  </section>
+
+  <section class="related" id="related" data-current="game-snake" data-cat="game"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var COLS = 20, ROWS = 20, CELL = 20;
+  var cv = $('cv'), ctx = cv.getContext('2d');
+  var snake, dir, queue, food, score, best = 0, over, paused, timer = null, intervalMs = 110;
+
+  try { best = parseInt(localStorage.getItem('yjtsnakebest'), 10) || 0; } catch (e) { best = 0; }
+
+  function drawRound(x, y, w, h, r, color) {
+    ctx.fillStyle = color;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, r);
+      ctx.fill();
+    } else {
+      ctx.fillRect(x, y, w, h);
+    }
+  }
+
+  function placeFood() {
+    var free = [];
+    for (var y = 0; y < ROWS; y++) {
+      for (var x = 0; x < COLS; x++) {
+        var hit = snake.some(function (s) { return s.x === x && s.y === y; });
+        if (!hit) free.push({ x: x, y: y });
+      }
+    }
+    food = free.length ? free[Math.floor(Math.random() * free.length)] : null;
+  }
+
+  function render() {
+    ctx.fillStyle = '#0f1418';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (var i = 1; i < COLS; i++) {
+      ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, cv.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(cv.width, i * CELL); ctx.stroke();
+    }
+
+    if (food) {
+      var cx = food.x * CELL + CELL / 2, cy = food.y * CELL + CELL / 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, CELL * 0.34, 0, Math.PI * 2);
+      ctx.fillStyle = '#e24b4a';
+      ctx.fill();
+    }
+
+    for (var k = snake.length - 1; k >= 0; k--) {
+      var s = snake[k];
+      var color = k === 0 ? '#5dcaa5' : (k % 2 ? '#1d9e75' : '#17865f');
+      drawRound(s.x * CELL + 1.5, s.y * CELL + 1.5, CELL - 3, CELL - 3, k === 0 ? 6 : 4, color);
+    }
+
+    if (over) {
+      ctx.fillStyle = 'rgba(0,0,0,0.62)';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '500 22px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('游戏结束', cv.width / 2, cv.height / 2 - 12);
+      ctx.font = '400 15px system-ui, sans-serif';
+      ctx.fillStyle = '#9fe1cb';
+      ctx.fillText('得分 ' + score + ' ｜ 点「重新开始」再来', cv.width / 2, cv.height / 2 + 20);
+    } else if (paused) {
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '500 22px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('已暂停', cv.width / 2, cv.height / 2 + 8);
+    }
+  }
+
+  function hud() {
+    $('score').textContent = score;
+    $('len').textContent = snake.length;
+    $('best').textContent = best;
+  }
+
+  function die(msg) {
+    over = true;
+    if (timer) { clearInterval(timer); timer = null; }
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem('yjtsnakebest', String(best)); } catch (e) {}
+    }
+    hud(); render();
+    $('status').textContent = msg || ('撞到了，本局得分 ' + score + '。');
+  }
+
+  function tick() {
+    if (over || paused) return;
+
+    if (queue.length) {
+      var d = queue.shift();
+      if (!(d.x === -dir.x && d.y === -dir.y)) dir = d;
+    }
+
+    var head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    var wrapOn = $('wrap').value === 'pass';
+
+    if (wrapOn) {
+      head.x = (head.x + COLS) % COLS;
+      head.y = (head.y + ROWS) % ROWS;
+    } else if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+      die('撞到墙了，本局得分 ' + score + '。');
+      return;
+    }
+
+    for (var i = 0; i < snake.length - 1; i++) {
+      if (snake[i].x === head.x && snake[i].y === head.y) {
+        die('咬到自己了，本局得分 ' + score + '。');
+        return;
+      }
+    }
+
+    snake.unshift(head);
+    if (food && head.x === food.x && head.y === food.y) {
+      score += 10;
+      placeFood();
+      if (score % 50 === 0) {
+        intervalMs = Math.max(55, intervalMs - 7);
+        clearInterval(timer);
+        timer = setInterval(tick, intervalMs);
+        toast('提速！当前间隔 ' + intervalMs + ' ms');
+      }
+    } else {
+      snake.pop();
+    }
+    hud(); render();
+  }
+
+  function reset() {
+    snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+    dir = { x: 1, y: 0 };
+    queue = [];
+    score = 0; over = false; paused = false;
+    intervalMs = parseInt($('speed').value, 10);
+    placeFood();
+    if (timer) clearInterval(timer);
+    timer = setInterval(tick, intervalMs);
+    $('btnPause').textContent = '暂停';
+    $('status').textContent = '方向键或 W A S D 控制，空格暂停；手机上直接在棋盘滑动。';
+    hud(); render();
+  }
+
+  function pushDir(d) {
+    if (over || paused) return;
+    var last = queue.length ? queue[queue.length - 1] : dir;
+    if (d.x === -last.x && d.y === -last.y) return;
+    if (d.x === last.x && d.y === last.y) return;
+    if (queue.length < 3) queue.push(d);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var map = {
+      ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 },
+      ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 },
+      a: { x: -1, y: 0 }, d: { x: 1, y: 0 }, w: { x: 0, y: -1 }, s: { x: 0, y: 1 },
+      A: { x: -1, y: 0 }, D: { x: 1, y: 0 }, W: { x: 0, y: -1 }, S: { x: 0, y: 1 }
+    };
+    if (e.key === ' ') { e.preventDefault(); $('btnPause').click(); return; }
+    var d = map[e.key];
+    if (!d) return;
+    e.preventDefault();
+    pushDir(d);
+  });
+
+  var sx = 0, sy = 0, touching = false;
+  cv.addEventListener('touchstart', function (e) {
+    if (!e.touches.length) return;
+    touching = true;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+  }, { passive: true });
+  cv.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+  cv.addEventListener('touchend', function (e) {
+    if (!touching) return;
+    touching = false;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+    if (Math.abs(dx) > Math.abs(dy)) pushDir({ x: dx > 0 ? 1 : -1, y: 0 });
+    else pushDir({ x: 0, y: dy > 0 ? 1 : -1 });
+  });
+
+  $('btnNew').onclick = function () { reset(); toast('新的一局'); };
+  $('btnPause').onclick = function () {
+    if (over) return;
+    paused = !paused;
+    this.textContent = paused ? '继续' : '暂停';
+    render();
+  };
+  $('speed').addEventListener('change', reset);
+  $('wrap').addEventListener('change', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>

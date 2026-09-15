@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二维码生成器 - 在线制作并可下载 PNG | 即用工具箱</title>
+<meta name="description" content="免费在线二维码生成工具，把网址、文字、联系方式生成二维码，可自定义尺寸、容错级别与颜色，直接下载 PNG 图片。本地生成，内容不上传。">
+<meta name="keywords" content="二维码生成,在线二维码,qr code,二维码制作,网址转二维码,二维码下载png">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>文本与编码<span>/</span>二维码生成</nav>
+
+  <div class="tool-head">
+    <h1>二维码生成</h1>
+    <p class="lead">把网址、文本、联系方式变成二维码，可调尺寸和容错级别，一键下载 PNG。</p>
+  </div>
+
+  <div class="note"><b>内容不上传</b><span>二维码由页面内脚本本机绘制，生成的链接不会被任何服务器记录。</span></div>
+
+  <section class="panel">
+    <div class="grid2">
+      <div>
+        <label class="fl" for="txt">二维码内容</label>
+        <textarea id="txt" spellcheck="false" placeholder="输入网址或文本，例如：
+https://www.example.com" style="min-height:120px"></textarea>
+
+        <div class="row" style="margin-top:14px">
+          <div>
+            <label class="fl" for="size">图片尺寸</label>
+            <select id="size">
+              <option value="256">256 × 256（微信内使用）</option>
+              <option value="320" selected>320 × 320（推荐）</option>
+              <option value="512">512 × 512</option>
+              <option value="768">768 × 768（打印用）</option>
+              <option value="1024">1024 × 1024（海报用）</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl" for="level">容错级别</label>
+            <select id="level">
+              <option value="L">L — 约 7%（内容最长）</option>
+              <option value="M" selected>M — 约 15%（默认）</option>
+              <option value="Q">Q — 约 25%</option>
+              <option value="H">H — 约 30%（可加 logo）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btns" style="margin-top:16px">
+          <button class="btn primary" id="btnGen">生成二维码</button>
+          <button class="btn" id="btnDl">下载 PNG</button>
+          <button class="btn" id="btnClear">清空</button>
+        </div>
+        <p id="status" class="hint">容错级别越高，二维码越"抗污损"，但同样内容需要的格子越多。</p>
+      </div>
+
+      <div>
+        <label class="fl">预览</label>
+        <div id="qr" style="background:#fff;padding:16px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;min-height:300px">
+          <span style="color:#8c95a3;font-size:13.5px">二维码将显示在这里</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h2>使用场景</h2>
+    <ul>
+      <li><strong>资料分享</strong>：把公众号文章、网盘资料、在线表格的链接生成二维码，打印在交底文件或会议材料上。</li>
+      <li><strong>联系方式</strong>：把手机号、邮箱、微信号做成二维码贴在名片或工位牌上。</li>
+      <li><strong>设备与物料标识</strong>：给设备铭牌、材料堆场加二维码，扫码即可查看对应台账。</li>
+    </ul>
+
+    <h2>参数怎么选</h2>
+    <p><strong>尺寸</strong>：手机上扫码 256–320 足够；需要打印在纸面或海报上时选 768 以上，避免马赛克。二维码本身是矢量格点，放大不会失真，但导出的是位图，所以尺寸要一次选够。</p>
+    <p><strong>容错级别</strong>：L / M / Q / H 分别对应约 7% / 15% / 25% / 30% 的面积被遮挡后仍可识别。日常使用 M 即可；如果准备在二维码中间叠加 logo，必须选 H。</p>
+    <p><strong>内容长度</strong>：内容越长，码点越密，手机越难扫。请尽量用短链接；纯文本建议控制在 300 字节以内。</p>
+
+    <h2>说明</h2>
+    <p>生成过程全部在本页面完成，不经过任何服务器，因此链接内容不会被记录或统计。下载的 PNG 无任何水印，可自由用于商业用途。</p>
+  </section>
+
+  <section class="related" id="related" data-current="qrcode" data-cat="text"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/qrcode.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var qrEl = $('qr'), statusEl = $('status');
+  var qrObj = null;
+
+  var LEVELS = { L: 'L', M: 'M', Q: 'Q', H: 'H' };
+
+  function generate() {
+    var t = $('txt').value.trim();
+    if (!t) { toast('请先输入二维码内容', 'err'); return; }
+    var size = parseInt($('size').value, 10);
+    qrEl.innerHTML = '';
+    try {
+      qrObj = new QRCode(qrEl, {
+        text: t,
+        width: size,
+        height: size,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel[LEVELS[$('level').value]]
+      });
+    } catch (e) {
+      setStatus(statusEl, '生成失败：' + e.message + '（内容可能过长，请缩短后重试）', true);
+      return;
+    }
+    setStatus(statusEl, '已生成 ' + size + '×' + size + ' 二维码，内容 ' + t.length + ' 个字符。');
+  }
+
+  function getCanvas() {
+    var c = qrEl.querySelector('canvas');
+    if (c) return c;
+    var img = qrEl.querySelector('img');
+    if (img && img.src && img.src.indexOf('data:image/png') === 0) {
+      var cv = document.createElement('canvas');
+      var size = parseInt($('size').value, 10);
+      cv.width = size; cv.height = size;
+      cv.getContext('2d').drawImage(img, 0, 0, size, size);
+      return cv;
+    }
+    return null;
+  }
+
+  $('btnGen').onclick = generate;
+
+  $('btnDl').onclick = function () {
+    var c = getCanvas();
+    if (!c) { toast('请先生成二维码', 'err'); return; }
+    c.toBlob(function (b) {
+      if (!b) { toast('导出失败，请换一个浏览器重试', 'err'); return; }
+      var t = $('txt').value.trim().replace(/[\\/:*?"<>|\s]/g, '').slice(0, 24) || 'qrcode';
+      saveBlob(b, t + '.png');
+    }, 'image/png');
+  };
+
+  $('btnClear').onclick = function () {
+    $('txt').value = '';
+    qrEl.innerHTML = '<span style="color:#8c95a3;font-size:13.5px">二维码将显示在这里</span>';
+    setStatus(statusEl, '容错级别越高，二维码越"抗污损"，但同样内容需要的格子越多。');
+  };
+
+  $('size').addEventListener('change', function () { if ($('txt').value.trim()) generate(); });
+  $('level').addEventListener('change', function () { if ($('txt').value.trim()) generate(); });
+  $('txt').addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); generate(); }
+  });
+})();
+</script>
+</body>
+</html>

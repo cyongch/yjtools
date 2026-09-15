@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>解压泡泡纸 - 在线捏泡泡，一按一响 | 即用工具箱</title>
+<meta name="description" content="在线解压泡泡纸：按住拖动就能连续捏破泡泡，带真实感的「啵」声（浏览器合成、无需下载音频）。纯粹的解压小玩意，捏完可一键重铺。">
+<meta name="keywords" content="解压泡泡纸,捏泡泡,减压小游戏,在线解压,泡泡纸模拟,放松工具,bubble wrap">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+<style>
+  .bw-wrap{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;overflow:auto}
+  #cv{max-width:100%;border-radius:8px;display:block;margin:0 auto;touch-action:none;cursor:crosshair}
+  .hud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .hud div{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 16px;text-align:center;min-width:88px}
+  .hud b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+  .hud span{font-size:12px;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#game">小游戏</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>小游戏 · 减压<span>/</span>解压泡泡纸</nav>
+
+  <div class="tool-head">
+    <h1>解压泡泡纸</h1>
+    <p class="lead">按住鼠标拖动，一路捏过去。泡泡会扁下去，还会响。</p>
+  </div>
+
+  <div class="note"><b>纯本地运行</b><span>声音由浏览器实时合成，不加载任何音频文件，也不联网。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="size">泡泡大小</label>
+        <select id="size">
+          <option value="26">小（密集，适合手快）</option>
+          <option value="38" selected>中（手感最好）</option>
+          <option value="54">大（一个一个慢慢捏）</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="sound">声音</label>
+        <select id="sound">
+          <option value="1" selected>开启（需要先点一下页面）</option>
+          <option value="0">关闭（安静模式）</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end;gap:9px">
+        <button class="btn primary" id="btnNew">重铺一张</button>
+        <button class="btn" id="btnAll">一键全捏</button>
+      </div>
+    </div>
+
+    <div class="hud" style="margin-top:16px">
+      <div><b id="left">0</b><span>剩余泡泡</span></div>
+      <div><b id="done">0</b><span>已捏破</span></div>
+      <div><b id="total">0</b><span>合计</span></div>
+    </div>
+
+    <div class="bw-wrap">
+      <canvas id="cv"></canvas>
+    </div>
+
+    <p id="status" class="hint" style="text-align:center">按住并拖动可以连续捏；手机也可在屏幕上滑动。</p>
+  </section>
+
+  <section class="prose">
+    <h2>用法</h2>
+    <p>在泡泡纸上按住鼠标拖动，经过的泡泡会依次被捏破；手机上用手指滑过去也一样。想一个一个捏也行，单击即可。<strong>点「一键全捏」可以听一遍完整的连响</strong>，纯爽感用。</p>
+
+    <h2>关于声音</h2>
+    <p>页面里的"啵"声不是加载的音频文件，而是<strong>用浏览器的 Web Audio 接口实时合成</strong>的——一个频率快速下滑的短音，模拟气泡破裂的听感。这样既不占用流量，也让每个泡泡的声音都略有不同，听起来更自然。</p>
+    <p>浏览器出于防止广告自动播放的考虑，要求音频必须由用户操作触发。所以如果你没听到声音，先在页面上点一下即可。也可以直接把声音切到"关闭"，安静地捏。</p>
+
+    <h2>为什么捏泡泡会让人放松</h2>
+    <p>泡泡纸之所以成为经典的解压道具，原因有几层：<strong>即时的反馈</strong>（按下去立刻有变化和声响）、<strong>零决策成本</strong>（不需要思考下一步做什么）、<strong>有明确的边界</strong>（捏完就结束了，不会像信息流一样无限延续）。</p>
+    <p>在线版本保留了前两点，并且额外解决了实体泡泡纸的两个问题：不会用一张少一张，也不用攒着不敢捏。</p>
+  </section>
+
+  <section class="related" id="related" data-current="game-bubble" data-cat="game"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var cv = $('cv'), ctx = cv.getContext('2d');
+  var bubbles = [], cols = 0, rows = 0, cell = 38, gap = 3, done = 0;
+  var actx = null, dragBroken = 0;
+
+  function soundOn() { return $('sound').value === '1'; }
+
+  function pop() {
+    if (!soundOn()) return;
+    try {
+      if (!actx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        actx = new AC();
+      }
+      if (actx.state === 'suspended') actx.resume();
+      var t = actx.currentTime;
+      var o = actx.createOscillator();
+      var g = actx.createGain();
+      o.type = 'sine';
+      var f0 = 380 + Math.random() * 560;
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(85, t + 0.075);
+      g.gain.setValueAtTime(0.16, t);
+      g.gain.exponentialRampToValueAtTime(0.0008, t + 0.095);
+      o.connect(g);
+      g.connect(actx.destination);
+      o.start(t);
+      o.stop(t + 0.11);
+    } catch (e) { /* 忽略音频异常，不影响捏泡泡 */ }
+  }
+
+  function layout() {
+    cell = parseInt($('size').value, 10);
+    gap = Math.max(2, Math.round(cell * 0.09));
+    var wrapW = cv.parentElement.clientWidth - 30;
+    cols = Math.max(5, Math.floor(wrapW / (cell + gap)));
+    rows = Math.max(4, Math.min(14, Math.round(cols * 0.6)));
+    cv.width = cols * (cell + gap) + gap;
+    cv.height = rows * (cell + gap) + gap;
+
+    bubbles = [];
+    for (var y = 0; y < rows; y++) {
+      for (var x = 0; x < cols; x++) {
+        bubbles.push({
+          cx: gap + x * (cell + gap) + cell / 2,
+          cy: gap + y * (cell + gap) + cell / 2,
+          r: cell / 2 - 1,
+          popped: false
+        });
+      }
+    }
+    done = 0;
+    draw(); hud();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = '#eef3f7';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+
+    for (var i = 0; i < bubbles.length; i++) {
+      var b = bubbles[i];
+      ctx.beginPath();
+      ctx.arc(b.cx, b.cy, b.r, 0, Math.PI * 2);
+      if (b.popped) {
+        ctx.fillStyle = '#c3d2dc';
+        ctx.fill();
+        ctx.strokeStyle = '#adbfcb';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(b.cx, b.cy, b.r * 0.56, 0, Math.PI * 2);
+        ctx.fillStyle = '#d5e1e9';
+        ctx.fill();
+      } else {
+        ctx.fillStyle = '#dbeaf4';
+        ctx.fill();
+        ctx.strokeStyle = '#b9d2e2';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(b.cx - b.r * 0.32, b.cy - b.r * 0.34, Math.max(1.4, b.r * 0.2), 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.fill();
+      }
+    }
+  }
+
+  function hud() {
+    var left = bubbles.length - done;
+    $('left').textContent = left;
+    $('done').textContent = done;
+    $('total').textContent = bubbles.length;
+    if (!bubbles.length) return;
+    if (left === 0) {
+      $('status').textContent = '全部捏完啦！点「重铺一张」再玩一次。';
+    }
+  }
+
+  function hitAt(clientX, clientY) {
+    var r = cv.getBoundingClientRect();
+    var sx = cv.width / r.width;
+    var mx = (clientX - r.left) * sx;
+    var my = (clientY - r.top) * sx;
+    var broke = 0;
+    for (var i = 0; i < bubbles.length; i++) {
+      var b = bubbles[i];
+      if (b.popped) continue;
+      var dx = mx - b.cx, dy = my - b.cy;
+      if (dx * dx + dy * dy <= (b.r + 1) * (b.r + 1)) {
+        b.popped = true;
+        done++;
+        broke++;
+      }
+    }
+    if (broke) {
+      pop();
+      draw();
+      hud();
+      if (bubbles.length - done === 0) toast('全部捏完了！');
+    }
+    return broke;
+  }
+
+  cv.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    dragBroken = 0;
+    hitAt(e.clientX, e.clientY);
+    if (cv.setPointerCapture) {
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+  });
+  cv.addEventListener('pointermove', function (e) {
+    var pressing = e.pointerType === 'mouse' ? (e.buttons === 1) : e.isPrimary;
+    if (!pressing) return;
+    hitAt(e.clientX, e.clientY);
+  });
+  cv.addEventListener('pointerup', function () { dragBroken = 0; });
+
+  $('btnNew').onclick = function () { layout(); toast('铺好一张新的'); };
+  $('btnAll').onclick = function () {
+    var n = 0;
+    bubbles.forEach(function (b) {
+      if (!b.popped) { b.popped = true; done++; n++; }
+    });
+    draw(); hud(); pop();
+    if (n) toast('捏破了 ' + n + ' 个');
+  };
+  $('size').addEventListener('change', layout);
+  $('sound').addEventListener('change', function () {
+    if (soundOn()) pop();
+  });
+  window.addEventListener('resize', function () {
+    clearTimeout(window._bwT);
+    window._bwT = setTimeout(layout, 220);
+  });
+
+  layout();
+})();
+</script>
+</body>
+</html>

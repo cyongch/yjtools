@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图片转 PDF - 在线把多张图片合成 PDF，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线图片转 PDF 工具，把 JPG、PNG、WebP 等多张图片合成一份 PDF，可选 A4/Letter 或自适应尺寸，支持页边距与页面方向设置。浏览器本地处理，图片不上传。">
+<meta name="keywords" content="图片转pdf,jpg转pdf,png转pdf,在线图片合成pdf,多张图片转pdf,img2pdf">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>PDF 处理<span>/</span>图片转 PDF</nav>
+
+  <div class="tool-head">
+    <h1>图片转 PDF</h1>
+    <p class="lead">把多张照片、截图、扫描图合成一份 PDF，可调页面尺寸、方向与页边距。</p>
+  </div>
+
+  <div class="note"><b>图片不上传</b><span>合成在浏览器内完成，手机照片、证件、图纸截图都不出本机。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把图片拖到这里，或点击选择</strong>
+      <small>支持 JPG、PNG、WebP、BMP，列表顺序即 PDF 页面顺序，用 ↑ ↓ 调整</small>
+    </div>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div>
+        <label class="fl" for="paper">页面尺寸</label>
+        <select id="paper">
+          <option value="fit" selected>自适应图片尺寸（无留白）</option>
+          <option value="a4">A4（210 × 297 mm）</option>
+          <option value="a3">A3（297 × 420 mm）</option>
+          <option value="letter">Letter（216 × 279 mm）</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="orient">页面方向</label>
+        <select id="orient">
+          <option value="auto" selected>按图片自动</option>
+          <option value="portrait">强制纵向</option>
+          <option value="landscape">强制横向</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="margin">页边距（mm）</label>
+        <input type="number" id="margin" value="10" min="0" max="50" step="1">
+      </div>
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>生成 PDF</button>
+      <button class="btn" id="btnSortName">按文件名排序</button>
+      <button class="btn" id="btnReverse">反转顺序</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <div class="btns" id="dlbox" style="margin-top:6px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>页面尺寸怎么选</h2>
+    <ul>
+      <li><strong>自适应图片尺寸</strong>：PDF 页面正好等于图片大小，四周无白边。适合做电子相册、把长截图拼成一份文档。</li>
+      <li><strong>A4 / A3 / Letter</strong>：图片等比缩放到页面内并居中，留出统一页边距。适合打印、装订、归档。</li>
+    </ul>
+    <p>选择固定纸张时，「页面方向」建议保持"按图片自动"：横向的图片会用横向页面，纵向的用纵向页面，避免大量留白。如果所有图片方向一致且需要装订成册，可强制统一方向。</p>
+
+    <h2>常见用途</h2>
+    <ul>
+      <li><strong>手机拍的票据与凭证</strong>：报销前把一串照片合成一份 PDF 提交。</li>
+      <li><strong>扫描件归档</strong>：扫描仪输出的是单张图片时，合并成 PDF 便于检索和打印。</li>
+      <li><strong>图纸与截图成册</strong>：把多张图纸截图整理成一份 PDF 发给他方。</li>
+      <li><strong>证件材料</strong>：身份证、执照、资质证书扫描件合成一份投标附件。</li>
+    </ul>
+
+    <h2>关于清晰度与体积</h2>
+    <p>图片会按原始像素嵌入 PDF，不做压缩，因此清晰度不损失。代价是体积——手机照片 3–5MB 一张，20 张合成后 PDF 可能接近 100MB。如果文件太大不便发送，建议先用本站的「图片压缩」工具把图片压到 1600px 宽再合成。</p>
+
+    <h2>数据安全</h2>
+    <p>合成全程在本机完成，不产生任何上传请求。涉及身份证件、营业执照等敏感材料时可直接使用，可断网操作。</p>
+  </section>
+
+  <section class="related" id="related" data-current="image-to-pdf" data-cat="pdf"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/pdf-lib.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var files = [], statusEl = $('status');
+
+  var PAPER = {
+    fit: [595.28, 841.89],
+    a4: [595.28, 841.89],
+    a3: [841.89, 1190.55],
+    letter: [612, 792]
+  };
+  var MM = 2.8346456693; // 1mm = 2.8346pt
+
+  function render() {
+    var ul = $('list');
+    ul.innerHTML = '';
+    files.forEach(function (f, i) {
+      var li = document.createElement('li');
+      var ord = document.createElement('span');
+      ord.className = 'sz';
+      ord.style.cssText = 'flex:none;width:22px;color:var(--accent);font-weight:600';
+      ord.textContent = (i + 1);
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = f.name;
+      var sz = document.createElement('span'); sz.className = 'sz'; sz.textContent = fmtSize(f.size);
+      var up = document.createElement('button');
+      up.className = 'del'; up.textContent = '↑'; up.title = '上移';
+      up.onclick = function () { if (i > 0) { var t = files[i - 1]; files[i - 1] = files[i]; files[i] = t; render(); } };
+      var dn = document.createElement('button');
+      dn.className = 'del'; dn.textContent = '↓'; dn.title = '下移';
+      dn.onclick = function () { if (i < files.length - 1) { var t = files[i + 1]; files[i + 1] = files[i]; files[i] = t; render(); } };
+      var del = document.createElement('button');
+      del.className = 'del'; del.textContent = '×'; del.title = '移除';
+      del.onclick = function () { files.splice(i, 1); render(); };
+      li.appendChild(ord); li.appendChild(nm); li.appendChild(sz);
+      li.appendChild(up); li.appendChild(dn); li.appendChild(del);
+      ul.appendChild(li);
+    });
+    $('btnRun').disabled = files.length === 0;
+  }
+
+  /** 把任意图片统一转成 JPEG/PNG 字节，供 pdf-lib 嵌入 */
+  async function toEmbeddable(file) {
+    var img = await loadImage(await readAsDataURL(file));
+    var type = file.type;
+    // pdf-lib 只支持 JPEG 与 PNG，其他格式统一走 Canvas 转 PNG
+    if (type === 'image/jpeg' || type === 'image/png') {
+      var buf = await readAsArrayBuffer(file);
+      return { bytes: new Uint8Array(buf), kind: type === 'image/jpeg' ? 'jpg' : 'png', w: img.naturalWidth, h: img.naturalHeight };
+    }
+    var cv = document.createElement('canvas');
+    cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    cv.getContext('2d').drawImage(img, 0, 0);
+    var blob = await new Promise(function (r) { cv.toBlob(r, 'image/png'); });
+    var ab = await blob.arrayBuffer();
+    return { bytes: new Uint8Array(ab), kind: 'png', w: cv.width, h: cv.height };
+  }
+
+  $('btnRun').onclick = async function () {
+    if (!files.length) return;
+    var btn = this; btn.disabled = true;
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = '';
+    try {
+      var doc = await PDFLib.PDFDocument.create();
+      var paper = $('paper').value;
+      var orient = $('orient').value;
+      var margin = Math.max(0, parseFloat($('margin').value) || 0) * MM;
+      var imgW = 0, imgH = 0;
+
+      for (var i = 0; i < files.length; i++) {
+        setStatus(statusEl, '正在处理 ' + (i + 1) + ' / ' + files.length + '：' + files[i].name);
+        await new Promise(function (r) { setTimeout(r, 0); });
+        var e = await toEmbeddable(files[i]);
+        var emb = e.kind === 'jpg' ? await doc.embedJpg(e.bytes) : await doc.embedPng(e.bytes);
+        imgW = e.w; imgH = e.h;
+        var page;
+
+        if (paper === 'fit') {
+          page = doc.addPage([e.w, e.h]);
+          page.drawImage(emb, { x: 0, y: 0, width: e.w, height: e.h });
+        } else {
+          var base = PAPER[paper].slice();
+          var landscape = orient === 'landscape' || (orient === 'auto' && e.w > e.h);
+          if (landscape) base = [base[1], base[0]];
+          page = doc.addPage(base);
+          var availW = Math.max(1, base[0] - margin * 2);
+          var availH = Math.max(1, base[1] - margin * 2);
+          var k = Math.min(availW / e.w, availH / e.h);
+          var dw = e.w * k, dh = e.h * k;
+          page.drawImage(emb, {
+            x: (base[0] - dw) / 2,
+            y: (base[1] - dh) / 2,
+            width: dw, height: dh
+          });
+        }
+      }
+
+      setStatus(statusEl, '正在生成文件…');
+      var bytes = await doc.save();
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + files.length + '</b><span>图片张数</span></div>' +
+        '<div class="stat"><b>' + files.length + '</b><span>PDF 页数</span></div>' +
+        '<div class="stat"><b>' + fmtSize(blob.size) + '</b><span>输出体积</span></div>';
+
+      var b = document.createElement('button');
+      b.className = 'btn primary';
+      b.textContent = '下载 PDF（' + files.length + ' 页）';
+      b.onclick = function () { saveBlob(blob, '图片合集.pdf'); };
+      $('dlbox').innerHTML = '';
+      $('dlbox').appendChild(b);
+      setStatus(statusEl, '生成完成，点击上方按钮下载。');
+    } catch (e) {
+      setStatus(statusEl, '生成失败：' + e.message, true);
+    }
+    btn.disabled = false;
+  };
+
+  $('btnReverse').onclick = function () { files.reverse(); render(); };
+  $('btnSortName').onclick = function () {
+    files.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh-Hans-CN', { numeric: true }); });
+    render();
+  };
+  $('btnClear').onclick = function () {
+    files = []; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+  };
+
+  bindDrop($('drop'), $('file'), function (fs) {
+    var imgs = fs.filter(function (f) { return /^image\//.test(f.type); });
+    if (!imgs.length) { toast('请选择图片文件', 'err'); return; }
+    imgs.forEach(function (f) { files.push(f); });
+    render();
+    setStatus(statusEl, '已选择 ' + files.length + ' 张图片，调整顺序后点「生成 PDF」。');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

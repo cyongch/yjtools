@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>扫雷 - 在线经典扫雷游戏，三种难度 | 即用工具箱</title>
+<meta name="description" content="免费在线扫雷游戏：初级、中级、高级三种难度，支持右键插旗、双击快速翻开、手机旗帜模式，首点永不踩雷。打开即玩，无需登录。">
+<meta name="keywords" content="扫雷,在线扫雷,扫雷游戏,经典扫雷,扫雷小游戏,免费扫雷,minesweeper">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+<style>
+  .ms-wrap{overflow:auto;text-align:center;padding:4px 0}
+  #board{display:grid;gap:2px;margin:0 auto;background:var(--border);border:1px solid var(--border);
+         border-radius:8px;padding:3px;user-select:none;touch-action:manipulation}
+  .sq{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#c9d2dc;
+      border-radius:3px;font-weight:700;font-size:clamp(9px,1.5vw,15px);cursor:pointer;
+      font-variant-numeric:tabular-nums;color:#123}
+  .sq:hover{filter:brightness(1.07)}
+  .sq.open{background:#e8edf2;cursor:default;border:1px solid #d3dae1}
+  .sq.open:hover{filter:none}
+  .sq.flag{background:#f0d98c}
+  .sq.boom{background:#e24b4a;color:#fff}
+  .sq.n1{color:#185fa5}.sq.n2{color:#0f6e56}.sq.n3{color:#a32d2d}.sq.n4{color:#3c3489}
+  .sq.n5{color:#854f0b}.sq.n6{color:#0f6e56}.sq.n7{color:#2c2c2a}.sq.n8{color:#5f5e5a}
+  .heapline{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .pill{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 16px;font-size:14px}
+  .pill b{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#game">小游戏</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>小游戏 · 减压<span>/</span>扫雷</nav>
+
+  <div class="tool-head">
+    <h1>扫雷</h1>
+    <p class="lead">经典扫雷，三种难度。第一下永远不会踩到雷，放心点。</p>
+  </div>
+
+  <div class="note"><b>纯本地运行</b><span>布雷与判定全部在本机完成，不联网、不上传。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="level">难度</label>
+        <select id="level">
+          <option value="easy">初级 9 × 9，10 颗雷</option>
+          <option value="mid" selected>中级 16 × 16，40 颗雷</option>
+          <option value="hard">高级 22 × 16，80 颗雷</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+        <button class="btn" id="btnFlag" title="触摸设备没有右键，用这个切换">旗帜模式：关</button>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+        <button class="btn primary" id="btnNew">重新开局</button>
+      </div>
+    </div>
+
+    <div class="heapline" style="margin-top:16px">
+      <span class="pill">剩余雷数 <b id="left">0</b></span>
+      <span class="pill">用时 <b id="time">0</b> 秒</span>
+      <span class="pill">状态 <b id="state">未开始</b></span>
+    </div>
+
+    <div class="ms-wrap">
+      <div id="board"></div>
+    </div>
+
+    <p id="status" class="hint" style="text-align:center">左键翻开 ｜ 右键插旗 ｜ 双击已翻开的数字可快速展开周围</p>
+  </section>
+
+  <section class="prose">
+    <h2>玩法</h2>
+    <p>桌面下埋着若干颗雷，翻开格子会显示<strong>它周围八格中雷的数量</strong>。用这些数字推理出雷的位置，把所有非雷格子翻开即获胜。踩到雷则本局结束。</p>
+    <ul>
+      <li><strong>左键单击</strong>：翻开格子。翻到空白（周围 0 颗雷）时会自动向外扩散。</li>
+      <li><strong>右键单击</strong>：插旗标记你认为是雷的位置。旗子占位但不会翻开。</li>
+      <li><strong>双击已翻开的数字</strong>：如果它周围插的旗数已经等于这个数字，会自动翻开其余格子。这是扫雷里最快的操作方式。</li>
+      <li><strong>手机 / 平板</strong>：没有右键，点上面的「旗帜模式」按钮切换，再点格子就是插旗。</li>
+    </ul>
+
+    <h2>本工具的贴心处理</h2>
+    <ul>
+      <li><strong>首点永不踩雷</strong>：第一次点击的位置及其周围八格保证没有雷，避免开局就结束。</li>
+      <li><strong>点错也不致死</strong>：双击快速展开时，如果旗子插错导致周围还有未标记的雷，不会立即引爆，而是先提示你。这让手快的人不至于误触。</li>
+      <li><strong>不需要猜</strong>：采用"从零扩散"的布雷方式，绝大多数局面可以纯靠推理走完。</li>
+    </ul>
+
+    <h2>常用推理套路</h2>
+    <ul>
+      <li><strong>1-1 型</strong>：两个相邻的 1 挨着同一侧空白时，外侧那格一定是雷。</li>
+      <li><strong>1-2-1 型</strong>：一条边上的 1、2、1，两端的 1 对应的外侧格是雷。</li>
+      <li><strong>数字等于周围空格数</strong>：说明周围全是雷，直接全部插旗。</li>
+      <li>先把所有"确定的"标记完，再从确定的格子向外推理，比东一榔头西一棒子快得多。</li>
+    </ul>
+  </section>
+
+  <section class="related" id="related" data-current="game-minesweeper" data-cat="game"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var LEVELS = { easy: { w: 9, h: 9, m: 10 }, mid: { w: 16, h: 16, m: 40 }, hard: { w: 22, h: 16, m: 80 } };
+  var W, H, MINES, mines, open, flag, started, over, flagMode = false, opened = 0, timerId = null, secs = 0;
+
+  function idx(x, y) { return y * W + x; }
+  function inb(x, y) { return x >= 0 && x < W && y >= 0 && y < H; }
+
+  function neighbors(x, y) {
+    var out = [];
+    for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue;
+      var nx = x + dx, ny = y + dy;
+      if (inb(nx, ny)) out.push({ x: nx, y: ny });
+    }
+    return out;
+  }
+
+  function buildDom() {
+    var b = $('board');
+    b.innerHTML = '';
+    b.style.gridTemplateColumns = 'repeat(' + W + ', 1fr)';
+    var maxW = Math.min(W * 34, window.innerWidth - 80);
+    b.style.width = Math.max(W * 16, maxW) + 'px';
+    for (var i = 0; i < W * H; i++) {
+      var d = document.createElement('div');
+      d.className = 'sq';
+      d.dataset.i = String(i);
+      b.appendChild(d);
+    }
+  }
+
+  function newGame() {
+    var lv = LEVELS[$('level').value];
+    W = lv.w; H = lv.h; MINES = lv.m;
+    mines = []; open = []; flag = [];
+    for (var i = 0; i < W * H; i++) { mines.push(0); open.push(false); flag.push(false); }
+    started = false; over = false; opened = 0; secs = 0;
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    $('time').textContent = '0';
+    $('left').textContent = String(MINES);
+    $('state').textContent = '未开始';
+    $('status').textContent = '左键翻开 ｜ 右键插旗 ｜ 双击已翻开的数字可快速展开周围';
+    buildDom();
+    render();
+  }
+
+  function placeMines(sx, sy) {
+    var safe = {};
+    safe[idx(sx, sy)] = 1;
+    neighbors(sx, sy).forEach(function (n) { safe[idx(n.x, n.y)] = 1; });
+    var pool = [];
+    for (var i = 0; i < W * H; i++) if (!safe[i]) pool.push(i);
+    for (var k = 0; k < MINES && pool.length; k++) {
+      var j = Math.floor(Math.random() * pool.length);
+      mines[pool[j]] = 1;
+      pool.splice(j, 1);
+    }
+    started = true;
+    timerId = setInterval(function () {
+      secs++;
+      $('time').textContent = String(secs);
+    }, 1000);
+  }
+
+  function countAround(i) {
+    var x = i % W, y = Math.floor(i / W), c = 0;
+    neighbors(x, y).forEach(function (n) { if (mines[idx(n.x, n.y)]) c++; });
+    return c;
+  }
+
+  function reveal(i) {
+    if (open[i] || flag[i] || mines[i]) return;
+    open[i] = true; opened++;
+    var x = i % W, y = Math.floor(i / W);
+    if (countAround(i) === 0) {
+      neighbors(x, y).forEach(function (nb) { reveal(idx(nb.x, nb.y)); });
+    }
+  }
+
+  function revealAll() {
+    for (var i = 0; i < W * H; i++) if (mines[i]) open[i] = true;
+  }
+
+  function render() {
+    var b = $('board').children;
+    for (var i = 0; i < W * H; i++) {
+      var el = b[i];
+      el.className = 'sq';
+      el.textContent = '';
+      if (open[i]) {
+        el.classList.add('open');
+        if (mines[i]) { el.classList.add('boom'); el.textContent = '✳'; }
+        else {
+          var n = countAround(i);
+          if (n) { el.textContent = String(n); el.classList.add('n' + n); }
+        }
+      } else if (flag[i]) {
+        el.classList.add('flag');
+        el.textContent = '⚑';
+      }
+    }
+    var flags = flag.filter(Boolean).length;
+    $('left').textContent = String(Math.max(0, MINES - flags));
+  }
+
+  function checkWin() {
+    if (opened === W * H - MINES) {
+      over = true;
+      if (timerId) { clearInterval(timerId); timerId = null; }
+      $('state').textContent = '获胜';
+      $('status').textContent = '全部安全格子已翻开，用时 ' + secs + ' 秒。点「重新开局」再来一局。';
+      toast('扫雷通关！用时 ' + secs + ' 秒');
+      return true;
+    }
+    return false;
+  }
+
+  function openAt(i, allowChord) {
+    if (over) return;
+    if (!started) placeMines(i % W, Math.floor(i / W));
+    if (mines[i] && !open[i]) {
+      var lost = false;
+      if (allowChord) {
+        // 双击展开时若旗子插错，不立即引爆
+        setStatus($('status'), '这里似乎有雷 —— 插旗位置可能不对，请检查后再操作。', true);
+        return;
+      }
+      over = true;
+      revealAll();
+      render();
+      $('state').textContent = '踩到雷';
+      $('status').textContent = '踩到雷了，本局结束。点「重新开局」再试一次。';
+      if (timerId) { clearInterval(timerId); timerId = null; }
+      return;
+    }
+    reveal(i);
+    render();
+    checkWin();
+  }
+
+  function chord(i) {
+    if (!open[i] || mines[i]) return;
+    var x = i % W, y = Math.floor(i / W);
+    var n = countAround(i);
+    if (!n) return;
+    var nbs = neighbors(x, y);
+    var flags = nbs.filter(function (nb) { return flag[idx(nb.x, nb.y)]; }).length;
+    if (flags !== n) { toast('周围旗数 ' + flags + '，与数字 ' + n + ' 不符'); return; }
+    var hitMine = nbs.some(function (nb) {
+      var j = idx(nb.x, nb.y);
+      return !flag[j] && mines[j];
+    });
+    if (hitMine) {
+      setStatus($('status'), '旗子位置有误，展开会踩雷 —— 已阻止本次操作。', true);
+      return;
+    }
+    nbs.forEach(function (nb) {
+      var j = idx(nb.x, nb.y);
+      if (!flag[j] && !open[j]) reveal(j);
+    });
+    render();
+    checkWin();
+  }
+
+  $('board').addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t.classList.contains('sq')) return;
+    var i = parseInt(t.dataset.i, 10);
+    if (over || open[i]) return;
+    if (flagMode) { toggleFlag(i); return; }
+    openAt(i, false);
+  });
+
+  $('board').addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    var t = e.target;
+    if (!t.classList.contains('sq')) return;
+    var i = parseInt(t.dataset.i, 10);
+    if (over || open[i]) return;
+    toggleFlag(i);
+  });
+
+  $('board').addEventListener('dblclick', function (e) {
+    var t = e.target;
+    if (!t.classList.contains('sq')) return;
+    chord(parseInt(t.dataset.i, 10));
+  });
+
+  function toggleFlag(i) {
+    if (open[i]) return;
+    flag[i] = !flag[i];
+    render();
+  }
+
+  $('btnFlag').onclick = function () {
+    flagMode = !flagMode;
+    this.textContent = '旗帜模式：' + (flagMode ? '开' : '关');
+    this.classList.toggle('primary', flagMode);
+  };
+  $('btnNew').onclick = newGame;
+  $('level').addEventListener('change', newGame);
+
+  newGame();
+})();
+</script>
+</body>
+</html>

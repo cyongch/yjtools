@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图片裁剪 - 在线按比例裁剪图片，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线图片裁剪工具：鼠标框选任意区域，支持 1:1、4:3、16:9 等比例锁定，实时预览，导出无损画质。浏览器本地处理，图片不上传。">
+<meta name="keywords" content="图片裁剪,在线裁剪图片,按比例裁剪,1:1裁剪,裁剪头像,16:9裁剪,图片剪裁">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#convert">换算</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>图片处理<span>/</span>图片裁剪</nav>
+
+  <div class="tool-head">
+    <h1>图片裁剪</h1>
+    <p class="lead">在图片上直接拖出要保留的区域，或用比例锁定精确裁剪。</p>
+  </div>
+
+  <div class="note"><b>图片不上传</b><span>裁剪在本机完成，不会产生任何上传请求。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把图片拖到这里，或点击选择</strong>
+      <small>支持 JPG、PNG、WebP、BMP</small>
+    </div>
+    <input type="file" id="file" accept="image/*" hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div>
+        <label class="fl" for="ratio">比例锁定</label>
+        <select id="ratio">
+          <option value="0">自由裁剪</option>
+          <option value="1">1 : 1（头像 / 方图）</option>
+          <option value="1.3333333">4 : 3（横）</option>
+          <option value="0.75">3 : 4（竖）</option>
+          <option value="1.7777778">16 : 9（宽屏）</option>
+          <option value="0.5625">9 : 16（竖屏）</option>
+          <option value="1.4142136">A4 竖（1 : 1.414）</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="x">左边距 X</label>
+        <input type="number" id="x" value="0" min="0" step="1">
+      </div>
+      <div>
+        <label class="fl" for="y">上边距 Y</label>
+        <input type="number" id="y" value="0" min="0" step="1">
+      </div>
+      <div>
+        <label class="fl" for="w">宽度</label>
+        <input type="number" id="w" value="0" min="1" step="1">
+      </div>
+      <div>
+        <label class="fl" for="h">高度</label>
+        <input type="number" id="h" value="0" min="1" step="1">
+      </div>
+    </div>
+    <p class="hint">在图片上按住鼠标拖动即可框选；也可以直接填上面的数字精确指定（单位为原始像素）。</p>
+
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;overflow:auto;margin-top:14px">
+      <canvas id="cv" style="max-width:100%;border-radius:6px;cursor:crosshair;touch-action:none;display:none"></canvas>
+      <p class="hint" id="pvHint" style="margin-top:10px">选择图片后在此框选要保留的区域</p>
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>裁剪并下载</button>
+      <button class="btn" id="btnFull" disabled>选择整张图</button>
+      <button class="btn" id="btnReset" disabled>清除选择</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>比例锁定的用处</h2>
+    <ul>
+      <li><strong>1:1</strong>：头像、证件照、方图排版。拖动时会自动保持正方形，省得反复调整。</li>
+      <li><strong>4:3 / 16:9</strong>：PPT 插图、视频封面、公众号封面（常见 2.35:1 或 16:9）。</li>
+      <li><strong>A4 竖（1:1.414）</strong>：裁剪后正好铺满一张 A4，打印不浪费纸。</li>
+    </ul>
+
+    <h2>操作方式</h2>
+    <p>拖入图片后，在预览图上<strong>按住鼠标左键拖动</strong>即可框选。松开后可以微调：直接修改下方的 X / Y / 宽 / 高数值，或在图上重新拖一个新框。选框外的区域会变暗，便于确认保留范围。</p>
+    <p>裁剪按原始像素执行——预览图是缩小显示的，但导出的是你框选区域对应的<strong>原始分辨率</strong>，因此不会有清晰度损失。</p>
+
+    <h2>常见用途</h2>
+    <ul>
+      <li>把手机截图里的多余部分裁掉，只保留正文区域。</li>
+      <li>从图纸截图中裁出需要的节点大样。</li>
+      <li>裁掉扫描件的黑边与装订线阴影。</li>
+      <li>把横幅照片裁成正方形用于头像。</li>
+    </ul>
+
+    <h2>数据安全</h2>
+    <p>裁剪在浏览器内完成，图片不上传，可断网使用。</p>
+  </section>
+
+  <section class="related" id="related" data-current="image-crop" data-cat="image"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var img = null, name = '', scale = 1, crop = { x: 0, y: 0, w: 0, h: 0 };
+  var dragging = false, sx = 0, sy = 0, statusEl = $('status');
+  var cv = $('cv'), ctx = cv.getContext('2d');
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function toCanvasXY(e) {
+    var r = cv.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left) * (cv.width / r.width),
+      y: (e.clientY - r.top) * (cv.height / r.height)
+    };
+  }
+
+  function draw() {
+    if (!img) return;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+
+    if (crop.w > 1 && crop.h > 1) {
+      var x = crop.x * scale, y = crop.y * scale;
+      var w = crop.w * scale, h = crop.h * scale;
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fillRect(0, 0, cv.width, y);
+      ctx.fillRect(0, y + h, cv.width, cv.height - y - h);
+      ctx.fillRect(0, y, x, h);
+      ctx.fillRect(x + w, y, cv.width - x - w, h);
+      ctx.strokeStyle = '#0d9488';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+    }
+  }
+
+  function syncInputs() {
+    $('x').value = Math.round(crop.x);
+    $('y').value = Math.round(crop.y);
+    $('w').value = Math.round(crop.w);
+    $('h').value = Math.round(crop.h);
+    updateStats();
+  }
+
+  function updateStats() {
+    if (!img) { $('stats').innerHTML = ''; return; }
+    $('stats').innerHTML =
+      '<div class="stat"><b>' + img.naturalWidth + ' × ' + img.naturalHeight + '</b><span>原图尺寸</span></div>' +
+      '<div class="stat"><b>' + Math.round(crop.w) + ' × ' + Math.round(crop.h) + '</b><span>裁剪尺寸</span></div>' +
+      '<div class="stat"><b>' + (crop.w > 1 ? Math.round(crop.w) + ' × ' + Math.round(crop.h) + ' px' : '未选择') + '</b><span>输出分辨率</span></div>';
+  }
+
+  function setFull() {
+    if (!img) return;
+    crop = { x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight };
+    syncInputs(); draw();
+  }
+
+  var dragStart = null;
+
+  function ratioVal() { return parseFloat($('ratio').value) || 0; }
+
+  function applyRatio(nx, ny, forceSquare) {
+    var r = ratioVal();
+    if (!r) return { w: nx, h: ny };
+    // r = 宽 / 高
+    var w = Math.abs(nx), h = Math.abs(ny);
+    if (forceSquare) { var m = Math.max(w, h); w = m; h = m / r; }
+    else { h = w / r; }
+    return { w: w, h: h };
+  }
+
+  cv.addEventListener('pointerdown', function (e) {
+    if (!img) return;
+    dragging = true;
+    cv.setPointerCapture(e.pointerId);
+    var p = toCanvasXY(e);
+    dragStart = { x: p.x / scale, y: p.y / scale };
+    crop = { x: dragStart.x, y: dragStart.y, w: 0, h: 0 };
+    draw();
+  });
+
+  cv.addEventListener('pointermove', function (e) {
+    if (!dragging || !img) return;
+    var p = toCanvasXY(e);
+    var cur = { x: p.x / scale, y: p.y / scale };
+    var dx = cur.x - dragStart.x;
+    var dy = cur.y - dragStart.y;
+    var r = ratioVal();
+    var w, h;
+
+    if (r) {
+      h = Math.abs(dx) / r;
+      w = Math.abs(dx);
+      if (Math.abs(dy) > h) { h = Math.abs(dy); w = h * r; }
+    } else {
+      w = Math.abs(dx); h = Math.abs(dy);
+    }
+
+    var x = dx >= 0 ? dragStart.x : dragStart.x - w;
+    var y = dy >= 0 ? dragStart.y : dragStart.y - h;
+
+    x = clamp(x, 0, img.naturalWidth);
+    y = clamp(y, 0, img.naturalHeight);
+    w = clamp(w, 0, img.naturalWidth - x);
+    h = clamp(h, 0, img.naturalHeight - y);
+
+    crop = { x: x, y: y, w: w, h: h };
+    draw();
+  });
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (crop.w < 4 || crop.h < 4) { crop = { x: 0, y: 0, w: 0, h: 0 }; }
+    syncInputs(); draw();
+  }
+  cv.addEventListener('pointerup', endDrag);
+  cv.addEventListener('pointercancel', endDrag);
+
+  ['x', 'y', 'w', 'h'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      if (!img) return;
+      crop.x = clamp(parseFloat($('x').value) || 0, 0, img.naturalWidth - 1);
+      crop.y = clamp(parseFloat($('y').value) || 0, 0, img.naturalHeight - 1);
+      crop.w = clamp(parseFloat($('w').value) || 0, 1, img.naturalWidth - crop.x);
+      crop.h = clamp(parseFloat($('h').value) || 0, 1, img.naturalHeight - crop.y);
+      draw();
+      updateStats();
+    });
+  });
+
+  $('ratio').addEventListener('change', function () {
+    if (!img || crop.w <= 1) return;
+    var r = ratioVal();
+    if (r) {
+      crop.h = crop.w / r;
+      if (crop.y + crop.h > img.naturalHeight) {
+        crop.h = img.naturalHeight - crop.y;
+        crop.w = crop.h * r;
+      }
+      syncInputs(); draw();
+    }
+  });
+
+  bindDrop($('drop'), $('file'), async function (fs) {
+    var f = fs.filter(function (x) { return /^image\//.test(x.type); })[0];
+    if (!f) { toast('请选择图片文件', 'err'); return; }
+    try {
+      img = await loadImage(await readAsDataURL(f));
+      name = f.name;
+      renderFileList($('list'), [f], function () { img = null; cv.style.display = 'none'; renderFileList($('list'), [], function () {}); $('btnRun').disabled = true; $('stats').innerHTML = ''; });
+      var maxW = 660;
+      scale = Math.min(1, maxW / img.naturalWidth);
+      cv.width = Math.round(img.naturalWidth * scale);
+      cv.height = Math.round(img.naturalHeight * scale);
+      cv.style.display = 'inline-block';
+      $('pvHint').textContent = '按住鼠标拖动框选要保留的区域（预览已等比缩小，导出为原始分辨率）';
+      $('btnRun').disabled = false;
+      $('btnFull').disabled = false;
+      $('btnReset').disabled = false;
+      setFull();
+      setStatus(statusEl, '已载入：' + f.name);
+    } catch (e) {
+      setStatus(statusEl, '图片载入失败：' + e.message, true);
+    }
+  });
+
+  $('btnFull').onclick = setFull;
+  $('btnReset').onclick = function () {
+    crop = { x: 0, y: 0, w: 0, h: 0 };
+    syncInputs(); draw();
+    setStatus(statusEl, '已清除选择，请重新框选。');
+  };
+
+  $('btnRun').onclick = function () {
+    if (!img) return;
+    var w = Math.round(crop.w), h = Math.round(crop.h);
+    if (w < 1 || h < 1) { toast('请先在图上框选要保留的区域', 'err'); return; }
+
+    var out = document.createElement('canvas');
+    out.width = w; out.height = h;
+    var o = out.getContext('2d');
+    var isPng = /\.png$/i.test(name);
+    if (!isPng) { o.fillStyle = '#ffffff'; o.fillRect(0, 0, w, h); }
+    o.drawImage(img, Math.round(crop.x), Math.round(crop.y), w, h, 0, 0, w, h);
+
+    out.toBlob(function (blob) {
+      var ext = isPng ? '.png' : '.jpg';
+      saveBlob(blob, baseName(name) + '_裁剪' + ext);
+      setStatus(statusEl, '裁剪完成：输出 ' + w + ' × ' + h + ' px，' + fmtSize(blob.size) + '。');
+    }, isPng ? 'image/png' : 'image/jpeg', 0.95);
+  };
+
+  $('btnClear').onclick = function () {
+    img = null; name = '';
+    cv.style.display = 'none';
+    renderFileList($('list'), [], function () {});
+    $('btnRun').disabled = true; $('btnFull').disabled = true; $('btnReset').disabled = true;
+    $('stats').innerHTML = ''; setStatus(statusEl, '');
+  };
+})();
+</script>
+</body>
+</html>

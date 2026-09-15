@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 删除页面 - 在线移除指定页，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线 PDF 删除页面工具，输入页码即可移除指定页（支持 2-5 范围写法），生成新的 PDF。浏览器本地处理，文件不上传、无水印。">
+<meta name="keywords" content="pdf删除页面,pdf移除页,在线删除pdf页,pdf去掉某页,删除pdf空白页">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>PDF 处理<span>/</span>PDF 删除页面</nav>
+
+  <div class="tool-head">
+    <h1>PDF 删除页面</h1>
+    <p class="lead">填上要删掉的页码，生成一份新的 PDF。常用于去掉扫描件里的空白页、隔页。</p>
+  </div>
+
+  <div class="note"><b>文件不上传</b><span>页面移除在本机完成，原文件不会被修改，输出为一份新文件。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把 PDF 拖到这里，或点击选择</strong>
+      <small>选完会显示总页数，方便你核对页码</small>
+    </div>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    <ul class="files" id="list"></ul>
+
+    <div style="margin-top:16px">
+      <label class="fl" for="pages">要删除的页码</label>
+      <input type="text" id="pages" placeholder="例如 2,5,8-10 表示删除第 2、5、8、9、10 页">
+    </div>
+    <p class="hint" id="hint">页码从 1 开始。支持单个页码 <code>3</code>、范围 <code>8-10</code>，用逗号混写。超出范围的页码会自动忽略。</p>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>生成新 PDF</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <div class="btns" id="dlbox" style="margin-top:6px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>典型场景</h2>
+    <ul>
+      <li><strong>去掉扫描空白页</strong>：双面扫描或自动进纸时，背面空白页会被一并扫进来，逐页删除很费时间，用范围写法一次清除。</li>
+      <li><strong>删除隔页与封面</strong>：系统导出的报表常带无用封面页、分隔页，删掉后再打印或归档。</li>
+      <li><strong>剔除错版页</strong>：文件中有版本错误的页需要替换，先删掉再与其他页合并。</li>
+    </ul>
+
+    <h2>操作说明</h2>
+    <p>先拖入 PDF，上方会显示总页数；在输入框填写要删除的页码，点「生成新 PDF」。结果会列出删除前后的页数对比，确认无误再下载。<strong>原文件不会被改动</strong>，删除操作作用于一份新生成的文件。</p>
+    <p>如果要把删除后的页面恢复，把原文件重新拖进来即可——本工具不写入原文件，也不产生临时副本。</p>
+
+    <h2>关于受保护的 PDF</h2>
+    <p>会忽略「禁止修改」权限标记，但不破解密码。需要密码才能打开的文件请先获取无密码版本。</p>
+  </section>
+
+  <section class="related" id="related" data-current="pdf-delete-pages" data-cat="pdf"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/pdf-lib.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null, totalPages = 0, statusEl = $('status');
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+
+  function render() {
+    renderFileList($('list'), file ? [file] : [], function () {
+      file = null; totalPages = 0; render();
+      $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+    });
+    $('btnRun').disabled = !file;
+  }
+
+  bindDrop($('drop'), $('file'), async function (fs) {
+    var f = fs.filter(function (x) { return /\.pdf$/i.test(x.name); })[0];
+    if (!f) { toast('请选择 PDF 文件', 'err'); return; }
+    file = f; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = '';
+    try {
+      setStatus(statusEl, '正在读取页数…');
+      var src = await PDFLib.PDFDocument.load(await readAsArrayBuffer(f), { ignoreEncryption: true });
+      totalPages = src.getPageCount();
+      $('stats').innerHTML = '<div class="stat"><b>' + totalPages + '</b><span>总页数</span></div>' +
+        '<div class="stat"><b>' + fmtSize(f.size) + '</b><span>文件体积</span></div>';
+      setStatus(statusEl, '已读取：' + f.name + '，共 ' + totalPages + ' 页。');
+    } catch (e) {
+      setStatus(statusEl, '读取失败：' + e.message, true);
+    }
+  });
+
+  $('btnRun').onclick = async function () {
+    if (!file) return;
+    if (!totalPages) { toast('文件页数未知，请重新选择', 'err'); return; }
+    var btn = this; btn.disabled = true;
+    $('dlbox').innerHTML = '';
+    try {
+      var del = parseRanges($('pages').value, totalPages, false);
+      if (!del.length) throw new Error('没有解析出有效的页码，请检查输入格式');
+      if (del.length >= totalPages) throw new Error('删除页数不能等于或超过总页数，否则输出为空文件');
+
+      var src = await PDFLib.PDFDocument.load(await readAsArrayBuffer(file), { ignoreEncryption: true });
+      var keep = [];
+      for (var i = 1; i <= totalPages; i++) { if (del.indexOf(i) === -1) keep.push(i - 1); }
+
+      setStatus(statusEl, '正在生成新文件…');
+      var out = await PDFLib.PDFDocument.create();
+      var pages = await out.copyPages(src, keep);
+      pages.forEach(function (p) { out.addPage(p); });
+      var bytes = await out.save();
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + totalPages + '</b><span>原页数</span></div>' +
+        '<div class="stat"><b>' + del.length + '</b><span>已删除</span></div>' +
+        '<div class="stat"><b>' + keep.length + '</b><span>剩余页数</span></div>' +
+        '<div class="stat"><b>' + fmtSize(blob.size) + '</b><span>输出体积</span></div>';
+
+      var b = document.createElement('button');
+      b.className = 'btn primary';
+      b.textContent = '下载新 PDF（' + keep.length + ' 页）';
+      b.onclick = function () { saveBlob(blob, baseName(file.name) + '_已删页.pdf'); };
+      $('dlbox').innerHTML = '';
+      $('dlbox').appendChild(b);
+      setStatus(statusEl, '已删除第 ' + del.join(', ') + ' 页，剩余 ' + keep.length + ' 页。');
+    } catch (e) {
+      setStatus(statusEl, '处理失败：' + e.message, true);
+    }
+    btn.disabled = false;
+  };
+
+  $('btnClear').onclick = function () {
+    file = null; totalPages = 0; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

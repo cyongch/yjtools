@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>时间戳转换 - Unix 时间戳与日期互转 | 即用工具箱</title>
+<meta name="description" content="免费在线 Unix 时间戳转换工具：时间戳与日期时间互转，自动识别秒和毫秒，同时显示北京时间、UTC、ISO 8601 格式与相对时间。纯本地计算。">
+<meta name="keywords" content="时间戳转换,unix时间戳,时间戳在线,毫秒时间戳,日期转时间戳,timestamp转换,北京时间戳">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#convert">换算</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>计算与转换<span>/</span>时间戳转换</nav>
+
+  <div class="tool-head">
+    <h1>时间戳转换</h1>
+    <p class="lead">Unix 时间戳与日期时间双向互转，自动识别秒与毫秒，同时给出多个时区结果。</p>
+  </div>
+
+  <div class="note"><b>不上传任何数据</b><span>纯本地计算，可断网使用。</span></div>
+
+  <section class="panel">
+    <label class="fl">当前时间戳</label>
+    <div class="stat-grid" id="now"></div>
+    <p class="hint">点击数值即可复制。</p>
+  </section>
+
+  <section class="panel">
+    <label class="fl">① 时间戳 → 日期时间</label>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:2 1 260px">
+        <input type="text" id="ts" placeholder="例如 1757900000 或 1757900000000" inputmode="numeric" autocomplete="off">
+      </div>
+      <div>
+        <select id="tsunit">
+          <option value="auto">自动识别</option>
+          <option value="s">按秒（10 位）</option>
+          <option value="ms">按毫秒（13 位）</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+        <button class="btn" id="btnNowFill">填入当前</button>
+      </div>
+    </div>
+    <ul class="files" id="outTs"></ul>
+    <p id="status" class="hint">自动识别规则：绝对值大于等于 1e11 视为毫秒，否则视为秒。</p>
+  </section>
+
+  <section class="panel">
+    <label class="fl">② 日期时间 → 时间戳</label>
+    <div class="row" style="margin-top:10px">
+      <div style="flex:2 1 280px">
+        <input type="datetime-local" id="dt" step="1">
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end;gap:9px">
+        <button class="btn primary" id="btnUseNow">用当前时间</button>
+      </div>
+    </div>
+    <ul class="files" id="outDt"></ul>
+    <p class="hint">按你电脑的本地时区解析输入值。若需要其他时区，可先换算出对应时刻再输入。</p>
+  </section>
+
+  <section class="prose">
+    <h2>什么是 Unix 时间戳</h2>
+    <p>Unix 时间戳是从 1970 年 1 月 1 日 00:00:00 UTC 起经过的秒数（部分语言与数据库用毫秒）。它是一个与时区无关的整数，因此适合在系统间传递时间。看到的现象就是：同一个时间戳，在北京显示为上午 8 点，在伦敦显示为凌晨 0 点。</p>
+
+    <h2>秒还是毫秒</h2>
+    <p>这是最常踩的坑。10 位数字通常是秒，13 位通常是毫秒。判断错误会导致时间差出 1000 倍——比如秒当毫秒会让 2026 年变成 1970 年附近。本工具默认自动识别，你也可以手动指定。</p>
+    <ul>
+      <li>10 位（如 <code>1757900000</code>）→ 秒，对应 2025 年前后。</li>
+      <li>13 位（如 <code>1757900000000</code>）→ 毫秒，同一个时刻。</li>
+    </ul>
+
+    <h2>各语言取时间戳的方式</h2>
+    <ul>
+      <li>JavaScript：<code>Date.now()</code> 得到毫秒；<code>Math.floor(Date.now()/1000)</code> 得到秒。</li>
+      <li>Python：<code>time.time()</code> 得到秒（浮点）。</li>
+      <li>MySQL：<code>UNIX_TIMESTAMP()</code> 得到秒。</li>
+      <li>Java：<code>System.currentTimeMillis()</code> 得到毫秒。</li>
+    </ul>
+
+    <h2>说明</h2>
+    <p>受 JavaScript 数值精度限制，可处理的时间范围约为公元 1 年至 275760 年，覆盖日常全部场景。UTC 与北京时间相差 8 小时（北京时间 = UTC + 8）。</p>
+  </section>
+
+  <section class="related" id="related" data-current="timestamp" data-cat="convert"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function fmtDate(ms, tz) {
+    var opt = {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    };
+    if (tz) opt.timeZone = tz;
+    try {
+      return new Intl.DateTimeFormat('zh-CN', opt).format(new Date(ms)).replace(/\//g, '-');
+    } catch (e) { return '—'; }
+  }
+
+  function relative(ms) {
+    var diff = Date.now() - ms;
+    var a = Math.abs(diff);
+    var unit = diff >= 0 ? '前' : '后';
+    var s;
+    if (a < 60000) s = Math.round(a / 1000) + ' 秒';
+    else if (a < 3600000) s = Math.round(a / 60000) + ' 分钟';
+    else if (a < 86400000) s = Math.round(a / 3600000) + ' 小时';
+    else if (a < 2592000000) s = Math.round(a / 86400000) + ' 天';
+    else if (a < 31536000000) s = Math.round(a / 2592000000) + ' 个月';
+    else s = (a / 31536000000).toFixed(1) + ' 年';
+    return s + unit;
+  }
+
+  function row(ul, label, value, mono) {
+    var li = document.createElement('li');
+    var nm = document.createElement('span');
+    nm.className = 'nm';
+    nm.textContent = label;
+    var sz = document.createElement('span');
+    sz.className = 'sz';
+    sz.style.cssText = 'color:var(--text);user-select:all' + (mono ? ';font-family:var(--mono);font-size:13px' : '');
+    sz.textContent = value;
+    li.appendChild(nm); li.appendChild(sz);
+    li.style.cursor = 'pointer';
+    li.title = '点击复制';
+    li.onclick = function () { copyText(value, '已复制：' + value); };
+    ul.appendChild(li);
+  }
+
+  function tickNow() {
+    var ms = Date.now();
+    var box = $('now');
+    box.innerHTML = '';
+    var items = [
+      ['秒级时间戳', String(Math.floor(ms / 1000))],
+      ['毫秒时间戳', String(ms)],
+      ['北京时间', fmtDate(ms, 'Asia/Shanghai')],
+      ['本地时间', fmtDate(ms)]
+    ];
+    items.forEach(function (it) {
+      var d = document.createElement('div');
+      d.className = 'stat';
+      d.style.cursor = 'pointer';
+      d.title = '点击复制';
+      d.innerHTML = '<b style="font-size:' + (it[1].length > 12 ? '14px' : '18px') + ';font-family:var(--mono);word-break:break-all">' + it[1] + '</b><span>' + it[0] + '</span>';
+      d.onclick = function () { copyText(it[1]); };
+      box.appendChild(d);
+    });
+  }
+
+  function tsToDate() {
+    var raw = $('ts').value.trim().replace(/[,\s]/g, '');
+    var ul = $('outTs');
+    ul.innerHTML = '';
+    if (!raw) { setStatus($('status'), '自动识别规则：绝对值大于等于 1e11 视为毫秒，否则视为秒。'); return; }
+    var n = parseFloat(raw);
+    if (isNaN(n)) { setStatus($('status'), '请输入数字形式的时间戳。', true); return; }
+
+    var mode = $('tsunit').value;
+    var ms;
+    if (mode === 's') ms = n * 1000;
+    else if (mode === 'ms') ms = n;
+    else ms = Math.abs(Math.trunc(n)) >= 1e11 ? n : n * 1000;
+
+    var d = new Date(ms);
+    if (isNaN(d.getTime())) { setStatus($('status'), '无法解析为有效时间，请检查数值。', true); return; }
+
+    var used = mode === 'auto' ? (Math.abs(Math.trunc(n)) >= 1e11 ? '毫秒' : '秒') : (mode === 's' ? '秒' : '毫秒');
+
+    row(ul, '北京时间 (UTC+8)', fmtDate(ms, 'Asia/Shanghai'), false);
+    row(ul, '本地时区', fmtDate(ms), false);
+    row(ul, 'UTC', fmtDate(ms, 'UTC'), false);
+    row(ul, 'ISO 8601', d.toISOString(), true);
+    row(ul, 'ISO（本地）', d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()), true);
+    row(ul, '相对现在', relative(ms), false);
+    setStatus($('status'), '已按「' + used + '」解析。');
+  }
+
+  function dateToTs() {
+    var v = $('dt').value;
+    var ul = $('outDt');
+    ul.innerHTML = '';
+    if (!v) return;
+    var d = new Date(v);
+    if (isNaN(d.getTime())) { setStatus($('status'), '日期格式无法解析。', true); return; }
+    var ms = d.getTime();
+    row(ul, '秒级时间戳', String(Math.floor(ms / 1000)), true);
+    row(ul, '毫秒时间戳', String(ms), true);
+    row(ul, 'ISO 8601 (UTC)', d.toISOString(), true);
+    row(ul, '该时刻的 UTC 时间', fmtDate(ms, 'UTC'), false);
+  }
+
+  function fillNowToDate() {
+    var d = new Date();
+    $('dt').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  $('ts').addEventListener('input', tsToDate);
+  $('tsunit').addEventListener('change', tsToDate);
+  $('btnNowFill').onclick = function () { $('ts').value = String(Math.floor(Date.now() / 1000)); tsToDate(); };
+  $('btnUseNow').onclick = function () { fillNowToDate(); dateToTs(); };
+  $('dt').addEventListener('input', dateToTs);
+
+  tickNow();
+  setInterval(tickNow, 1000);
+  fillNowToDate();
+})();
+</script>
+</body>
+</html>

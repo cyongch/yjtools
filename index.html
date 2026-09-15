@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>即用工具箱 - 免费在线文件处理工具，文件不上传本地处理</title>
+<meta name="description" content="免费在线工具合集：JSON 格式化、文本对比、Base64 编解码、哈希计算、二维码生成、图片压缩与格式转换、PDF 合并拆分旋转加水印。全部在浏览器本地完成，文件不上传服务器，无需登录、无水印。">
+<meta name="keywords" content="在线工具,免费工具,JSON格式化,文本对比,Base64,哈希,二维码,图片压缩,图片格式转换,PDF合并,PDF拆分,PDF加水印,不上传文件">
+<link rel="stylesheet" href="assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="index.html"><span class="dot"></span>即用工具箱</a>
+    <nav>
+      <a href="#text">文本编码</a>
+      <a href="#image">图片处理</a>
+      <a href="#pdf">PDF 处理</a>
+      <a href="#convert">计算转换</a>
+      <a href="#game">小游戏</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>文件不上传的在线工具箱</h1>
+    <p>全部工具在<span class="hl">你的浏览器里</span>本地运行，文件不经过任何服务器，断网也能用。</p>
+    <div class="searchbar">
+      <input id="search" type="text" placeholder="搜索工具，例如 PDF、图片压缩、JSON" autocomplete="off">
+    </div>
+  </section>
+
+  <div class="chips" id="chip-bar">
+    <button class="chip on" data-cat="all">全部工具</button>
+    <button class="chip" data-cat="text">文本与编码</button>
+    <button class="chip" data-cat="image">图片处理</button>
+    <button class="chip" data-cat="pdf">PDF 处理</button>
+    <button class="chip" data-cat="convert">计算与转换</button>
+    <button class="chip" data-cat="game">小游戏 · 减压</button>
+  </div>
+
+  <p class="count-line">共 <b id="count">0</b> 个工具</p>
+
+  <div class="grid" id="grid"></div>
+
+  <section class="prose" style="padding-bottom:60px">
+    <h2>为什么选择本地处理的工具</h2>
+    <p>大多数在线转换工具会把你的文件上传到服务器加工，再传回来。你的合同、清单、报价单、图纸截图在别人的服务器上停留过多久、有没有被留存，你无从得知。</p>
+    <p>本站所有工具都使用浏览器的原生能力（Canvas、WebAssembly、Web Crypto）在本机完成计算，<strong>文件从头到尾没有离开你的电脑</strong>。你可以直接断开网络，页面照常工作。</p>
+
+    <h2>哪些工具适合在这里做</h2>
+    <ul>
+      <li><strong>文本与编码类</strong>：JSON 格式化、文本对比、Base64、哈希、二维码、批量文本处理——零依赖，瞬间完成。</li>
+      <li><strong>图片类</strong>：压缩、格式转换、尺寸调整、加水印——由浏览器 Canvas 渲染，不损失也不上传。</li>
+      <li><strong>PDF 编辑类</strong>：合并、拆分、旋转、删除页面、加水印、图片转 PDF——由页内嵌入的 PDF 引擎直接改写文件结构。</li>
+    </ul>
+    <p>需要说明的是，<strong>Word / Excel / PPT 与 PDF 之间的高保真互转</strong>依赖服务器端的排版引擎，纯浏览器无法保证版式一致，本站不提供这类工具，以免给你一份排版错乱的文件。</p>
+
+    <h2>使用说明</h2>
+    <p>点击任意工具卡片即可开始。所有工具均免费、无需登录、不加水印、不限次数。建议使用最新版的 Chrome、Edge 或 Safari 浏览器。</p>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>即用工具箱 · 所有处理均在本机完成</span>
+    <a href="index.html" class="sp">返回首页</a>
+  </div>
+</footer>
+
+<script src="assets/tools-data.js?v=202609151500"></script>
+<script src="assets/app.js?v=202609151500"></script>
+</body>
+</html>

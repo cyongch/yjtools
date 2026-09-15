@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 旋转 - 在线批量修正页面方向，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线 PDF 旋转工具，把页面顺时针旋转 90°、180°、270°，可对全部页或指定页操作，用于修正扫描件方向。浏览器本地处理，文件不上传。">
+<meta name="keywords" content="pdf旋转,pdf页面转向,在线旋转pdf,扫描件方向修正,pdf转90度,pdf倒转">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>PDF 处理<span>/</span>PDF 旋转</nav>
+
+  <div class="tool-head">
+    <h1>PDF 旋转</h1>
+    <p class="lead">修正扫描件方向：整册旋转，或只把歪掉的那几页摆正。</p>
+  </div>
+
+  <div class="note"><b>文件不上传</b><span>旋转在本机完成，输出为一份新文件，原文件保持不变。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把 PDF 拖到这里，或点击选择</strong>
+      <small>选完会显示总页数</small>
+    </div>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div>
+        <label class="fl" for="angle">旋转角度（顺时针）</label>
+        <select id="angle">
+          <option value="90">90° — 横着的页面竖过来</option>
+          <option value="180">180° — 上下颠倒的页面摆正</option>
+          <option value="270">270° — 逆时针 90°</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="scope">应用范围</label>
+        <select id="scope">
+          <option value="all">全部页面</option>
+          <option value="pages">仅指定页面</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="box-pages" style="margin-top:14px;display:none">
+      <label class="fl" for="pages">要旋转的页码</label>
+      <input type="text" id="pages" placeholder="例如 1,4-6 表示第 1、4、5、6 页">
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>旋转并导出</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <div class="btns" id="dlbox" style="margin-top:6px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>旋转是"改方向"还是"改内容"</h2>
+    <p>本工具的做法是给页面打上一个旋转标记（PDF 标准里的 <code>/Rotate</code> 属性），而不是把页面内容重新绘制一遍。这样做有两个好处：<strong>文件体积几乎不变</strong>，而且<strong>不会损失清晰度</strong>——页面里的文字和线条仍是矢量数据。</p>
+    <p>绝大多数阅读器（Adobe Reader、WPS、微信内置、浏览器）都正确支持这个标记。极个别老旧或非标准的阅读器可能忽略它，如果发现旋转没生效，换一个阅读器打开即可。</p>
+
+    <h2>常见场景</h2>
+    <ul>
+      <li><strong>扫描件方向混乱</strong>：自动进纸扫描时，横向的表格和纵向的文字页混在一起，用「仅指定页面」逐批摆正。</li>
+      <li><strong>手机拍照插入的页面</strong>：手机拍的照片插进 PDF 后常是横的，旋转 90° 即可。</li>
+      <li><strong>图纸方向统一</strong>：把混排的横图、竖图统一成同一方向后再打印。</li>
+    </ul>
+
+    <h2>操作说明</h2>
+    <p>拖入 PDF → 选择角度 → 选择作用范围（全部页或指定页）→ 点「旋转并导出」。如果在已旋转过的文件上再次旋转，角度会累加，不会互相覆盖。</p>
+
+    <h2>注意</h2>
+    <p>本工具忽略「禁止修改」权限标记但不破解密码。需要密码打开的文件请先获取无密码版本。</p>
+  </section>
+
+  <section class="related" id="related" data-current="pdf-rotate" data-cat="pdf"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/pdf-lib.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null, totalPages = 0, statusEl = $('status');
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+
+  function render() {
+    renderFileList($('list'), file ? [file] : [], function () {
+      file = null; totalPages = 0; render();
+      $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+    });
+    $('btnRun').disabled = !file;
+  }
+
+  $('scope').addEventListener('change', function () {
+    $('box-pages').style.display = this.value === 'pages' ? '' : 'none';
+  });
+
+  bindDrop($('drop'), $('file'), async function (fs) {
+    var f = fs.filter(function (x) { return /\.pdf$/i.test(x.name); })[0];
+    if (!f) { toast('请选择 PDF 文件', 'err'); return; }
+    file = f; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = '';
+    try {
+      setStatus(statusEl, '正在读取页数…');
+      var src = await PDFLib.PDFDocument.load(await readAsArrayBuffer(f), { ignoreEncryption: true });
+      totalPages = src.getPageCount();
+      $('stats').innerHTML = '<div class="stat"><b>' + totalPages + '</b><span>总页数</span></div>' +
+        '<div class="stat"><b>' + fmtSize(f.size) + '</b><span>文件体积</span></div>';
+      setStatus(statusEl, '已读取：' + f.name + '，共 ' + totalPages + ' 页。');
+    } catch (e) {
+      setStatus(statusEl, '读取失败：' + e.message, true);
+    }
+  });
+
+  $('btnRun').onclick = async function () {
+    if (!file || !totalPages) return;
+    var btn = this; btn.disabled = true;
+    $('dlbox').innerHTML = '';
+    try {
+      var delta = parseInt($('angle').value, 10);
+      var scope = $('scope').value;
+      var targets;
+      if (scope === 'all') {
+        targets = [];
+        for (var i = 1; i <= totalPages; i++) targets.push(i);
+      } else {
+        targets = parseRanges($('pages').value, totalPages, false);
+        if (!targets.length) throw new Error('没有解析出有效页码，请检查输入');
+      }
+
+      setStatus(statusEl, '正在处理…');
+      var doc = await PDFLib.PDFDocument.load(await readAsArrayBuffer(file), { ignoreEncryption: true });
+      var pages = doc.getPages();
+      targets.forEach(function (p) {
+        var pg = pages[p - 1];
+        var cur = pg.getRotation().angle || 0;
+        pg.setRotation(PDFLib.degrees(((cur + delta) % 360 + 360) % 360));
+      });
+
+      var bytes = await doc.save();
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + totalPages + '</b><span>总页数</span></div>' +
+        '<div class="stat"><b>' + targets.length + '</b><span>已旋转页数</span></div>' +
+        '<div class="stat"><b>' + delta + '°</b><span>旋转角度</span></div>' +
+        '<div class="stat"><b>' + fmtSize(blob.size) + '</b><span>输出体积</span></div>';
+
+      var b = document.createElement('button');
+      b.className = 'btn primary';
+      b.textContent = '下载旋转后的 PDF';
+      b.onclick = function () { saveBlob(blob, baseName(file.name) + '_已旋转' + delta + '度.pdf'); };
+      $('dlbox').innerHTML = '';
+      $('dlbox').appendChild(b);
+      setStatus(statusEl, '已把 ' + targets.length + ' 页顺时针旋转 ' + delta + '°，点击上方按钮下载。');
+    } catch (e) {
+      setStatus(statusEl, '处理失败：' + e.message, true);
+    }
+    btn.disabled = false;
+  };
+
+  $('btnClear').onclick = function () {
+    file = null; totalPages = 0; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

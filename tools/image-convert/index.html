@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图片格式转换 - PNG/JPG/WebP 在线互转，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线图片格式转换工具，PNG、JPG、WebP 互相转换，支持批量处理、保留透明通道、自定义背景色与质量。浏览器本地转换，图片不上传。">
+<meta name="keywords" content="图片格式转换,png转jpg,jpg转png,webp转换,在线格式转换,批量转换图片">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>图片处理<span>/</span>图片格式转换</nav>
+
+  <div class="tool-head">
+    <h1>图片格式转换</h1>
+    <p class="lead">PNG、JPG、WebP 互相转换，批量处理，透明通道按你的选择保留或填充底色。</p>
+  </div>
+
+  <div class="note"><b>图片不上传</b><span>转换由浏览器本地完成，图片不会离开你的电脑。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把图片拖到这里，或点击选择</strong>
+      <small>支持 PNG、JPG、WebP、BMP、GIF（取首帧），可多选</small>
+    </div>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div>
+        <label class="fl" for="fmt">目标格式</label>
+        <select id="fmt">
+          <option value="image/jpeg">JPEG（.jpg，体积小，不支持透明）</option>
+          <option value="image/png">PNG（.png，无损，支持透明）</option>
+          <option value="image/webp">WebP（.webp，体积更小，支持透明）</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="bg">透明区域填充色</label>
+        <select id="bg">
+          <option value="#ffffff">白色</option>
+          <option value="#000000">黑色</option>
+          <option value="#f5f5f5">浅灰</option>
+          <option value="none">保留透明（仅 PNG / WebP 有效）</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <label class="fl" for="q">输出质量：<span id="qval">90%</span></label>
+      <input type="range" id="q" min="10" max="100" value="90" step="5" style="width:100%;max-width:420px">
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>开始转换</button>
+      <button class="btn" id="btnZip" disabled>打包下载 ZIP</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <ul class="files" id="out"></ul>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>什么时候需要转格式</h2>
+    <ul>
+      <li><strong>论坛、系统上传限制</strong>：很多管理平台只接受 JPG 或 PNG，先转一遍再上传。</li>
+      <li><strong>截图要放进压缩包或 Word</strong>：PNG 截图体积往往偏大，转成 JPEG（质量 90%）通常能小一半以上。</li>
+      <li><strong>需要透明背景</strong>：把带白底的 JPG logo 抠图后存为 PNG，或把 PNG 转 WebP 减小体积同时保留透明。</li>
+      <li><strong>网页提速</strong>：站点图片统一转 WebP，加载更快。</li>
+    </ul>
+
+    <h2>三种格式怎么选</h2>
+    <ul>
+      <li><code>JPEG</code>：有损压缩，适合照片、实景图。体积最小，兼容性最好。不支持透明，也不适合文字截图（边缘会有杂色）。</li>
+      <li><code>PNG</code>：无损压缩，适合截图、表格、线条图、需要透明的图标。体积较大。</li>
+      <li><code>WebP</code>：兼顾两者，同画质下比 JPEG 小 25%–35%，同时支持透明。缺点是个别老版本软件无法预览。</li>
+    </ul>
+
+    <h2>注意事项</h2>
+    <p>从 PNG 转为 JPEG 时，若选择「保留透明」，透明区域会因格式不支持而变成黑色。需要白底请显式选择「白色」。另外，转换是"重新编码"，不是简单的改扩展名——后者会导致文件无法打开，本站不会这么做。</p>
+
+    <h2>数据安全</h2>
+    <p>转换全程在浏览器内完成，不产生任何网络上传。涉及未公开图纸、报价单截图时可直接使用。</p>
+  </section>
+
+  <section class="related" id="related" data-current="image-convert" data-cat="image"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/fflate.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var files = [], results = [], statusEl = $('status');
+
+  function extOf(type) { return type === 'image/png' ? '.png' : type === 'image/webp' ? '.webp' : '.jpg'; }
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+
+  function refresh() {
+    renderFileList($('list'), files, function (i) { files.splice(i, 1); refresh(); });
+    $('btnRun').disabled = files.length === 0;
+  }
+
+  function renderOut() {
+    var ul = $('out');
+    ul.innerHTML = '';
+    results.forEach(function (r) {
+      var li = document.createElement('li');
+      var nm = document.createElement('span');
+      nm.className = 'nm';
+      nm.textContent = r.name;
+      var sz = document.createElement('span');
+      sz.className = 'sz';
+      sz.textContent = fmtSize(r.blob.size);
+      var btn = document.createElement('button');
+      btn.className = 'btn sm';
+      btn.style.cssText = 'height:28px;padding:0 12px;font-size:12.5px;flex:none';
+      btn.textContent = '下载';
+      btn.onclick = function () { saveBlob(r.blob, r.name); };
+      li.appendChild(nm); li.appendChild(sz); li.appendChild(btn);
+      ul.appendChild(li);
+    });
+  }
+
+  async function convertOne(file) {
+    var dataUrl = await readAsDataURL(file);
+    var img = await loadImage(dataUrl);
+    var w = img.naturalWidth, h = img.naturalHeight;
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    var ctx = cv.getContext('2d');
+    var fmt = $('fmt').value;
+    var bg = $('bg').value;
+    var keepAlpha = (fmt === 'image/png' || fmt === 'image/webp') && bg === 'none';
+    if (!keepAlpha) {
+      ctx.fillStyle = bg === 'none' ? '#ffffff' : bg;
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, w, h);
+    var q = parseInt($('q').value, 10) / 100;
+    var blob = await new Promise(function (res) { cv.toBlob(res, fmt, q); });
+    if (!blob) throw new Error('转换失败：' + file.name);
+    return { blob: blob, name: baseName(file.name) + extOf(fmt) };
+  }
+
+  $('btnRun').onclick = async function () {
+    if (!files.length) return;
+    var btn = this;
+    btn.disabled = true;
+    results = [];
+    for (var i = 0; i < files.length; i++) {
+      setStatus(statusEl, '正在转换 ' + (i + 1) + ' / ' + files.length + ' …');
+      try { results.push(await convertOne(files[i])); }
+      catch (e) { setStatus(statusEl, '第 ' + (i + 1) + ' 张失败：' + e.message, true); }
+      await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    renderOut();
+    setStatus(statusEl, '转换完成，共 ' + results.length + ' 张。');
+    btn.disabled = false;
+    $('btnZip').disabled = results.length === 0;
+  };
+
+  $('btnZip').onclick = function () {
+    if (!results.length) return;
+    Promise.all(results.map(function (r) {
+      return r.blob.arrayBuffer().then(function (b) { return { name: r.name, data: new Uint8Array(b) }; });
+    })).then(function (items) {
+      var o = {};
+      items.forEach(function (it) { o[it.name] = it.data; });
+      saveBlob(new Blob([fflate.zipSync(o, { level: 0 })], { type: 'application/zip' }), 'converted-images.zip');
+      toast('已打包 ' + items.length + ' 张图片');
+    }).catch(function (e) { toast('打包失败：' + e.message, 'err'); });
+  };
+
+  $('btnClear').onclick = function () {
+    files = []; results = [];
+    refresh(); renderOut();
+    setStatus(statusEl, '');
+  };
+
+  $('q').addEventListener('input', function () { $('qval').textContent = this.value + '%'; });
+
+  bindDrop($('drop'), $('file'), function (fs) {
+    fs.filter(function (f) { return /^image\//.test(f.type); }).forEach(function (f) { files.push(f); });
+    refresh();
+    if (files.length) setStatus(statusEl, '已选择 ' + files.length + ' 张图片。');
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>

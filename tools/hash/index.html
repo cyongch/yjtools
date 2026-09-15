@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>哈希计算 - MD5/SHA-1/SHA-256/SHA-512 在线生成 | 即用工具箱</title>
+<meta name="description" content="免费在线哈希计算工具，一次生成 MD5、SHA-1、SHA-256、SHA-384、SHA-512 摘要，支持文本与文件，可用于校验文件是否被改动。纯本地计算不上传。">
+<meta name="keywords" content="md5在线,sha256在线,哈希计算,文件校验,md5生成,sha1,sha512,摘要算法">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>文本与编码<span>/</span>哈希计算</nav>
+
+  <div class="tool-head">
+    <h1>哈希计算</h1>
+    <p class="lead">一次算出 MD5、SHA-1、SHA-256、SHA-384、SHA-512 五种摘要，支持文本和文件。</p>
+  </div>
+
+  <div class="note"><b>数据不上传</b><span>摘要由浏览器内置算法计算，大文件也在本机处理，不消耗上传带宽。</span></div>
+
+  <section class="panel">
+    <div class="grid2">
+      <div>
+        <label class="fl" for="txt">输入文本</label>
+        <textarea id="txt" spellcheck="false" placeholder="输入任意文本，下方实时生成摘要"></textarea>
+      </div>
+      <div>
+        <label class="fl">摘要结果</label>
+        <div id="res"><p class="hint">输入文本或选择文件后显示结果</p></div>
+      </div>
+    </div>
+
+    <label class="fl" style="margin-top:18px">或选择文件（支持任意大小，本地读取）</label>
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把文件拖到这里，或点击选择</strong>
+      <small>文件不会被上传，全部在本机计算</small>
+    </div>
+    <input type="file" id="file" hidden>
+    <p id="file-info" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>哈希有什么用</h2>
+    <p>哈希（散列）是把任意长度的数据压成一段固定长度"指纹"的算法。相同内容一定得到相同指纹，内容改一个字符指纹就完全不同，而且无法从指纹反推出内容。常见的用途有三个：</p>
+    <ul>
+      <li><strong>校验文件完整性</strong>：下载完安装包或图纸包后，和发布方给的 MD5 / SHA-256 比一下，一致说明传输中没有损坏或被篡改。</li>
+      <li><strong>确认两份文件是否相同</strong>：文件名不同但内容一样，哈希值会完全相同，比逐字节对比更快。</li>
+      <li><strong>留痕存档</strong>：对已定稿的报价文件、结算书取一次摘要并记录，日后可证明文件未被改动。</li>
+    </ul>
+
+    <h2>如何选择算法</h2>
+    <ul>
+      <li><code>MD5</code>：最快，兼容性最好，很多网站用它发布校验值。但抗碰撞性已被攻破，<strong>不要用于安全场景</strong>，仅适合做完整性校验。</li>
+      <li><code>SHA-1</code>：同样已被认为不安全，多用于兼容老系统。</li>
+      <li><code>SHA-256</code>：当前推荐的标准选择，安全且性能足够，优先用它。</li>
+      <li><code>SHA-384</code> / <code>SHA-512</code>：强度更高，摘要更长，用于对安全性要求更严的场合。</li>
+    </ul>
+
+    <h2>数据安全</h2>
+    <p>MD5 由页面内嵌的算法库计算，SHA 系列调用浏览器原生 <code>Web Crypto</code> 接口。整个过程不产生网络请求，图纸、合同等文件可以放心拖进来。</p>
+  </section>
+
+  <section class="related" id="related" data-current="hash" data-cat="text"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/spark-md5.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var resEl = $('res'), txtEl = $('txt'), infoEl = $('file-info');
+  var seq = 0;
+
+  var ALGOS = [
+    { key: 'MD5', label: 'MD5' },
+    { key: 'SHA-1', label: 'SHA-1' },
+    { key: 'SHA-256', label: 'SHA-256' },
+    { key: 'SHA-384', label: 'SHA-384' },
+    { key: 'SHA-512', label: 'SHA-512' }
+  ];
+
+  function toHex(buf) {
+    var b = new Uint8Array(buf), s = '';
+    for (var i = 0; i < b.length; i++) s += b[i].toString(16).padStart(2, '0');
+    return s;
+  }
+
+  function render(map, note) {
+    var html = '';
+    ALGOS.forEach(function (a) {
+      var v = map[a.key] || '—';
+      html += '<div class="stat" style="text-align:left;margin-bottom:9px;padding:11px 13px">' +
+        '<span style="display:block;margin-bottom:3px">' + a.label + '</span>' +
+        '<div style="font-family:var(--mono);font-size:11.5px;line-height:1.55;word-break:break-all;color:var(--text)">' + v + '</div>' +
+        '<button class="btn sm" style="margin-top:8px;height:26px;padding:0 10px;font-size:12px" data-copy="' + v + '">复制</button>' +
+        '</div>';
+    });
+    resEl.innerHTML = html + (note ? '<p class="hint">' + note + '</p>' : '');
+    resEl.querySelectorAll('[data-copy]').forEach(function (b) {
+      b.onclick = function () { if (b.dataset.copy !== '—') copyText(b.dataset.copy); };
+    });
+  }
+
+  async function digest(buffer, mySeq) {
+    var map = { MD5: SparkMD5.ArrayBuffer.hash(buffer) };
+    if (!(window.crypto && crypto.subtle)) {
+      map['SHA-1'] = map['SHA-256'] = map['SHA-384'] = map['SHA-512'] = '当前环境不支持（需 HTTPS 或 localhost 访问）';
+      return map;
+    }
+    for (var i = 1; i < ALGOS.length; i++) {
+      var alg = ALGOS[i].key;
+      var d = await crypto.subtle.digest(alg, buffer);
+      map[alg] = toHex(d);
+    }
+    if (mySeq !== seq) return null;
+    return map;
+  }
+
+  var timer = null;
+  txtEl.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(async function () {
+      var t = txtEl.value;
+      if (!t) { resEl.innerHTML = '<p class="hint">输入文本或选择文件后显示结果</p>'; return; }
+      var my = ++seq;
+      var buf = new TextEncoder().encode(t).buffer;
+      var map = await digest(buf, my);
+      if (map) render(map, '共 ' + t.length + ' 个字符，UTF-8 编码后 ' + buf.byteLength + ' 字节。');
+    }, 220);
+  });
+
+  bindDrop($('drop'), $('file'), async function (files) {
+    var f = files[0];
+    infoEl.textContent = '正在读取 ' + f.name + '（' + fmtSize(f.size) + '）…';
+    var my = ++seq;
+    try {
+      var buf = await readAsArrayBuffer(f);
+      var map = await digest(buf, my);
+      if (!map) return;
+      infoEl.textContent = '文件：' + f.name + '（' + fmtSize(f.size) + '）';
+      render(map, '文件摘要，可用于与发布方提供的校验值比对。');
+    } catch (e) {
+      infoEl.textContent = '读取失败：' + e.message;
+    }
+  });
+})();
+</script>
+</body>
+</html>

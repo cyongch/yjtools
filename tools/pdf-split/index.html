@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 拆分 - 在线按页提取/按份数切分，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线 PDF 拆分工具，支持提取指定页码范围、按每 N 页切分、每页单独输出三种模式，结果可打包 ZIP 下载。浏览器本地处理，文件不上传。">
+<meta name="keywords" content="pdf拆分,pdf分割,pdf提取页面,在线拆分pdf,pdf分页,pdf按页拆分">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>PDF 处理<span>/</span>PDF 拆分</nav>
+
+  <div class="tool-head">
+    <h1>PDF 拆分</h1>
+    <p class="lead">提取指定页、按份数切分、或每页单独存为一个文件，三种模式一次搞定。</p>
+  </div>
+
+  <div class="note"><b>文件不上传</b><span>拆分在浏览器内完成，不发起任何上传请求。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把要拆分的 PDF 拖到这里，或点击选择</strong>
+      <small>每次处理一个文件，选完会显示总页数</small>
+    </div>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div>
+        <label class="fl" for="mode">拆分模式</label>
+        <select id="mode">
+          <option value="range">提取指定页码范围 → 一个文件</option>
+          <option value="every">按每 N 页切分 → 多个文件</option>
+          <option value="single">每页单独一个文件 → ZIP</option>
+        </select>
+      </div>
+      <div id="box-range">
+        <label class="fl" for="ranges">页码范围</label>
+        <input type="text" id="ranges" placeholder="例如 1-3,5,8-10">
+      </div>
+      <div id="box-every" style="display:none">
+        <label class="fl" for="every">每几页切一份</label>
+        <input type="number" id="every" value="10" min="1" step="1">
+      </div>
+    </div>
+    <p class="hint" id="hint">页码从 1 开始，支持 <code>1-3</code> 范围、<code>2,5,7</code> 列表，以及两者混写。</p>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>开始拆分</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <ul class="files" id="out"></ul>
+    <div class="btns" id="dlbox" style="margin-top:6px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>三种模式的区别</h2>
+    <ul>
+      <li><strong>提取指定页码范围</strong>：从大文件里挑出需要的几页，合成一个精简 PDF。适合抽取报价单的第 3-5 页、把图纸册里的某几张单独拿出来。</li>
+      <li><strong>按每 N 页切分</strong>：按固定份数均匀切成若干个文件。适合把 200 页的投标文件按 50 页一册分给不同人打印。</li>
+      <li><strong>每页单独一个文件</strong>：一页一个 PDF，打包成 ZIP 下载。适合批量分发单页或再单独处理某一页。</li>
+    </ul>
+
+    <h2>页码范围写法</h2>
+    <p>支持三种写法任意组合，用英文逗号或中文逗号分隔均可：</p>
+    <ul>
+      <li><code>3</code> — 只提取第 3 页。</li>
+      <li><code>1-5</code> — 提取第 1 到第 5 页。</li>
+      <li><code>1,3,7-9</code> — 提取第 1、3、7、8、9 页。</li>
+      <li><code>5-</code> — 从第 5 页一直取到最后一页（仅「提取指定页」模式支持）。</li>
+    </ul>
+    <p>超出范围的页码会被自动忽略，不会报错；提取结果按页码从小到大排列，与输入顺序无关。</p>
+
+    <h2>关于受保护的 PDF</h2>
+    <p>本工具会忽略「禁止修改」这类权限标记，但<strong>不破解密码</strong>。需要密码才能打开的文件请先获取无密码版本。</p>
+  </section>
+
+  <section class="related" id="related" data-current="pdf-split" data-cat="pdf"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/pdf-lib.min.js"></script>
+<script src="../../vendor/fflate.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null, statusEl = $('status'), totalPages = 0;
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+
+  function render() {
+    renderFileList($('list'), file ? [file] : [], function () {
+      file = null; totalPages = 0; render();
+      $('stats').innerHTML = ''; $('out').innerHTML = ''; $('dlbox').innerHTML = '';
+      setStatus(statusEl, '');
+    });
+    $('btnRun').disabled = !file;
+  }
+
+  $('mode').addEventListener('change', function () {
+    var m = this.value;
+    $('box-range').style.display = m === 'range' ? '' : 'none';
+    $('box-every').style.display = m === 'every' ? '' : 'none';
+    $('hint').innerHTML = m === 'single'
+      ? '总页数会显示在上方，点「开始拆分」后打包为 ZIP 下载。'
+      : '页码从 1 开始，支持 <code>1-3</code> 范围、<code>2,5,7</code> 列表，以及两者混写。';
+  });
+
+  bindDrop($('drop'), $('file'), async function (fs) {
+    var f = fs.filter(function (x) { return /\.pdf$/i.test(x.name); })[0];
+    if (!f) { toast('请选择 PDF 文件', 'err'); return; }
+    file = f; render();
+    $('stats').innerHTML = ''; $('out').innerHTML = ''; $('dlbox').innerHTML = '';
+    try {
+      setStatus(statusEl, '正在读取页数…');
+      var src = await PDFLib.PDFDocument.load(await readAsArrayBuffer(f), { ignoreEncryption: true });
+      totalPages = src.getPageCount();
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + totalPages + '</b><span>总页数</span></div>' +
+        '<div class="stat"><b>' + fmtSize(f.size) + '</b><span>文件体积</span></div>';
+      setStatus(statusEl, '已读取：' + f.name + '，共 ' + totalPages + ' 页。');
+    } catch (e) {
+      totalPages = 0;
+      setStatus(statusEl, '读取失败：' + e.message + '（文件可能已加密，需要密码）。', true);
+    }
+  });
+
+  function renderOut(items, zipBlob, label) {
+    var ul = $('out');
+    ul.innerHTML = '';
+    items.forEach(function (it) {
+      var li = document.createElement('li');
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = it.name;
+      var sz = document.createElement('span'); sz.className = 'sz'; sz.textContent = fmtSize(it.blob.size);
+      var btn = document.createElement('button');
+      btn.className = 'btn sm';
+      btn.style.cssText = 'height:28px;padding:0 12px;font-size:12.5px;flex:none';
+      btn.textContent = '下载';
+      btn.onclick = function () { saveBlob(it.blob, it.name); };
+      li.appendChild(nm); li.appendChild(sz); li.appendChild(btn);
+      ul.appendChild(li);
+    });
+    var box = $('dlbox');
+    box.innerHTML = '';
+    if (zipBlob) {
+      var b = document.createElement('button');
+      b.className = 'btn primary';
+      b.textContent = label;
+      b.onclick = function () { saveBlob(zipBlob, label.replace(/[（）]/g, '').slice(0, 20) + '.zip'); };
+      box.appendChild(b);
+    }
+  }
+
+  $('btnRun').onclick = async function () {
+    if (!file) return;
+    var btn = this; btn.disabled = true;
+    $('out').innerHTML = ''; $('dlbox').innerHTML = '';
+    try {
+      var buf = await readAsArrayBuffer(file);
+      var src = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
+      var n = src.getPageCount();
+      var mode = $('mode').value;
+      var base = baseName(file.name);
+
+      if (mode === 'range') {
+        var pages0 = parseRanges($('ranges').value, n, true);
+        if (!pages0.length) { throw new Error('页码范围为空或不合法，请检查输入'); }
+        var out = await PDFLib.PDFDocument.create();
+        var cp = await out.copyPages(src, pages0.map(function (p) { return p - 1; }));
+        cp.forEach(function (p) { out.addPage(p); });
+        var bytes = await out.save();
+        var blob = new Blob([bytes], { type: 'application/pdf' });
+        renderOut([{ name: base + '_提取页.pdf', blob: blob }], null);
+        setStatus(statusEl, '提取完成，共 ' + pages0.length + ' 页（' + pages0.join(', ') + '）。');
+      } else {
+        var groups = [];
+        if (mode === 'every') {
+          var step = Math.max(1, parseInt($('every').value, 10) || 10);
+          for (var s = 0; s < n; s += step) {
+            var g = [];
+            for (var k = s; k < Math.min(s + step, n); k++) g.push(k);
+            groups.push(g);
+          }
+        } else {
+          for (var p = 0; p < n; p++) groups.push([p]);
+        }
+        var items = [], zipObj = {};
+        for (var i = 0; i < groups.length; i++) {
+          setStatus(statusEl, '正在生成第 ' + (i + 1) + ' / ' + groups.length + ' 份…');
+          var o = await PDFLib.PDFDocument.create();
+          var ps = await o.copyPages(src, groups[i]);
+          ps.forEach(function (pg) { o.addPage(pg); });
+          var by = await o.save();
+          var nm = groups.length === n
+            ? base + '_第' + (groups[i][0] + 1) + '页.pdf'
+            : base + '_' + (groups[i][0] + 1) + '-' + (groups[i][groups[i].length - 1] + 1) + '.pdf';
+          var bb = new Blob([by], { type: 'application/pdf' });
+          items.push({ name: nm, blob: bb });
+          zipObj[nm] = new Uint8Array(by);
+          await new Promise(function (r) { setTimeout(r, 0); });
+        }
+        var zip = new Blob([fflate.zipSync(zipObj, { level: 0 })], { type: 'application/zip' });
+        renderOut(items, zip, '打包下载全部（' + items.length + ' 个文件）');
+        setStatus(statusEl, '拆分完成，共生成 ' + items.length + ' 个文件。');
+      }
+    } catch (e) {
+      setStatus(statusEl, '拆分失败：' + e.message, true);
+    }
+    btn.disabled = false;
+  };
+
+  $('btnClear').onclick = function () {
+    file = null; totalPages = 0; render();
+    $('stats').innerHTML = ''; $('out').innerHTML = ''; $('dlbox').innerHTML = '';
+    setStatus(statusEl, '');
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

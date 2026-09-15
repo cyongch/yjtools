@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 页面重排 - 调整顺序/复制/插入空白页，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线 PDF 页面整理工具：调整页面顺序、复制页面、插入空白页，生成新的 PDF。浏览器本地处理，文件不上传、无水印。">
+<meta name="keywords" content="pdf页面重排,pdf调整顺序,pdf插入空白页,pdf移动页面,pdf整理页序,organize pdf">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#convert">换算</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>PDF 处理<span>/</span>PDF 页面重排</nav>
+
+  <div class="tool-head">
+    <h1>PDF 页面重排</h1>
+    <p class="lead">调整页面顺序、复制页面、插入空白页，把扫描错序的文件整理回正确次序。</p>
+  </div>
+
+  <div class="note"><b>文件不上传</b><span>整理在本机完成，原文件不被修改，输出为一份新文件。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把 PDF 拖到这里，或点击选择</strong>
+      <small>选完会列出全部页面，可逐页调整</small>
+    </div>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn" id="btnReverse" disabled>整体反转顺序</button>
+      <button class="btn" id="btnReset" disabled>恢复原始顺序</button>
+      <button class="btn" id="btnAddBlank" disabled>末尾插入空白页</button>
+      <button class="btn" id="btnDropBlank">删除全部空白页</button>
+    </div>
+
+    <p class="fl" style="margin-top:20px">页面列表（按当前顺序）</p>
+    <div id="pages" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;margin-top:10px"></div>
+
+    <div class="btns" style="margin-top:18px">
+      <button class="btn primary" id="btnRun" disabled>生成新 PDF</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <div class="btns" id="dlbox" style="margin-top:6px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>典型场景</h2>
+    <ul>
+      <li><strong>扫描件错序</strong>：双面扫描或自动进纸常把页序打乱，用上下移动把顺序摆正。</li>
+      <li><strong>双面扫描拆页</strong>：一次性扫了正反两面，需要按奇数页、偶数页重新交错排列。</li>
+      <li><strong>补空白页</strong>：打印装订要求总页数为偶数、或某章必须从奇数页开始，插一张空白页解决。</li>
+      <li><strong>复制页面</strong>：同一份附页需要给多个收件方，复制一份即可。</li>
+    </ul>
+
+    <h2>操作说明</h2>
+    <p>页面以网格形式列出，<strong>格子上的序号是"输出时的顺序"</strong>，格子内的小字是"原文件的第几页"。点 <code>↑</code> <code>↓</code> 移动位置，<code>⧉</code> 在其后复制一份，<code>×</code> 移除该页。</p>
+    <p>被移除的页面只是不参与输出，原文件不受影响，随时可以点「恢复原始顺序」重来。</p>
+
+    <h2>关于空白页</h2>
+    <p>插入的空白页统一使用 A4 尺寸（595 × 842 pt）。如果原文件是 A3 或其他规格，插入的空白页会与相邻页尺寸不一致——这种情况下建议先用「PDF 统一尺寸」类工具处理，或告诉我，我可以改为跟随前一页尺寸。</p>
+
+    <h2>数据安全</h2>
+    <p>页面的复制与重排在本机完成，文件不经过任何服务器。</p>
+  </section>
+
+  <section class="related" id="related" data-current="pdf-organize" data-cat="pdf"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/pdf-lib.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null, order = [], statusEl = $('status');
+  var A4 = [595.28, 841.89];
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+
+  function render() {
+    renderFileList($('list'), file ? [file] : [], function () {
+      file = null; order = []; render();
+      $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+    });
+    $('btnRun').disabled = !file;
+    $('btnReverse').disabled = !file;
+    $('btnReset').disabled = !file;
+    $('btnAddBlank').disabled = !file;
+  }
+
+  function mkBtn(label, title, fn) {
+    var b = document.createElement('button');
+    b.className = 'del';
+    b.textContent = label;
+    b.title = title;
+    b.onclick = fn;
+    return b;
+  }
+
+  function renderPages() {
+    var box = $('pages');
+    box.innerHTML = '';
+    order.forEach(function (o, i) {
+      var d = document.createElement('div');
+      d.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:10px 8px;text-align:center;background:' +
+        (o.blank ? 'var(--accent-w)' : 'var(--surface)');
+
+      var num = document.createElement('div');
+      num.style.cssText = 'font-size:17px;font-weight:600;font-family:var(--mono);color:var(--accent)';
+      num.textContent = String(i + 1);
+
+      var sub = document.createElement('div');
+      sub.style.cssText = 'font-size:11.5px;color:var(--text-3);margin-top:2px';
+      sub.textContent = o.blank ? '空白页' : '原第 ' + (o.src + 1) + ' 页';
+
+      var btns = document.createElement('div');
+      btns.style.cssText = 'display:flex;gap:3px;justify-content:center;margin-top:9px;flex-wrap:wrap';
+      btns.appendChild(mkBtn('↑', '上移', function () {
+        if (i > 0) { var t = order[i - 1]; order[i - 1] = order[i]; order[i] = t; renderPages(); }
+      }));
+      btns.appendChild(mkBtn('↓', '下移', function () {
+        if (i < order.length - 1) { var t = order[i + 1]; order[i + 1] = order[i]; order[i] = t; renderPages(); }
+      }));
+      btns.appendChild(mkBtn('⧉', '在其后复制一份', function () {
+        if (order.length >= 500) { toast('页面数已达上限 500', 'err'); return; }
+        order.splice(i + 1, 0, o.blank ? { blank: true } : { src: o.src });
+        renderPages();
+      }));
+      btns.appendChild(mkBtn('×', '移除该页', function () {
+        if (order.length <= 1) { toast('至少要保留一页', 'err'); return; }
+        order.splice(i, 1);
+        renderPages();
+      }));
+
+      d.appendChild(num); d.appendChild(sub); d.appendChild(btns);
+      box.appendChild(d);
+    });
+    updateStats();
+  }
+
+  function updateStats() {
+    if (!order.length) { $('stats').innerHTML = ''; return; }
+    var blank = order.filter(function (o) { return o.blank; }).length;
+    var changed = order.some(function (o, i) { return !o.blank && o.src !== i; }) ||
+      order.length !== ($('stats').dataset.orig ? Number($('stats').dataset.orig) : order.length);
+    $('stats').innerHTML =
+      '<div class="stat"><b>' + order.length + '</b><span>输出页数</span></div>' +
+      '<div class="stat"><b>' + blank + '</b><span>空白页</span></div>' +
+      '<div class="stat"><b>' + (changed ? '已调整' : '未调整') + '</b><span>顺序状态</span></div>';
+  }
+
+  bindDrop($('drop'), $('file'), async function (fs) {
+    var f = fs.filter(function (x) { return /\.pdf$/i.test(x.name); })[0];
+    if (!f) { toast('请选择 PDF 文件', 'err'); return; }
+    file = f; render();
+    $('dlbox').innerHTML = '';
+    try {
+      setStatus(statusEl, '正在读取页数…');
+      var src = await PDFLib.PDFDocument.load(await readAsArrayBuffer(f), { ignoreEncryption: true });
+      var n = src.getPageCount();
+      if (n > 500) { setStatus(statusEl, '页数 ' + n + ' 超过 500，处理会非常慢，已中止。', true); file = null; render(); return; }
+      order = [];
+      for (var i = 0; i < n; i++) order.push({ src: i });
+      $('stats').dataset.orig = String(n);
+      renderPages();
+      setStatus(statusEl, '已读取：' + f.name + '，共 ' + n + ' 页。用 ↑ ↓ 调整顺序后点「生成新 PDF」。');
+    } catch (e) {
+      setStatus(statusEl, '读取失败：' + e.message, true);
+    }
+  });
+
+  $('btnReverse').onclick = function () { order.reverse(); renderPages(); };
+  $('btnReset').onclick = function () {
+    order = order.filter(function (o) { return !o.blank; });
+    order.sort(function (a, b) { return a.src - b.src; });
+    renderPages();
+    setStatus(statusEl, '已恢复原始顺序（空白页已移除）。');
+  };
+  $('btnAddBlank').onclick = function () {
+    if (order.length >= 500) { toast('页面数已达上限 500', 'err'); return; }
+    order.push({ blank: true });
+    renderPages();
+  };
+  $('btnDropBlank').onclick = function () {
+    var before = order.length;
+    order = order.filter(function (o) { return !o.blank; });
+    if (order.length === before) { toast('当前没有空白页'); return; }
+    renderPages();
+    setStatus(statusEl, '已移除 ' + (before - order.length) + ' 个空白页。');
+  };
+
+  $('btnRun').onclick = async function () {
+    if (!file) return;
+    var btn = this; btn.disabled = true;
+    $('dlbox').innerHTML = '';
+    try {
+      var src = await PDFLib.PDFDocument.load(await readAsArrayBuffer(file), { ignoreEncryption: true });
+      var idx = [];
+      order.forEach(function (o) { if (!o.blank) idx.push(o.src); });
+
+      setStatus(statusEl, '正在复制页面…');
+      var out = await PDFLib.PDFDocument.create();
+      var copied = idx.length ? await out.copyPages(src, idx) : [];
+      var ci = 0;
+      order.forEach(function (o) {
+        if (o.blank) out.addPage(A4);
+        else out.addPage(copied[ci++]);
+      });
+
+      setStatus(statusEl, '正在生成文件…');
+      var bytes = await out.save();
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+
+      var blank = order.filter(function (o) { return o.blank; }).length;
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + order.length + '</b><span>输出页数</span></div>' +
+        '<div class="stat"><b>' + blank + '</b><span>空白页</span></div>' +
+        '<div class="stat"><b>' + fmtSize(blob.size) + '</b><span>输出体积</span></div>';
+
+      var b = document.createElement('button');
+      b.className = 'btn primary';
+      b.textContent = '下载新 PDF（' + order.length + ' 页）';
+      b.onclick = function () { saveBlob(blob, baseName(file.name) + '_重排.pdf'); };
+      $('dlbox').innerHTML = '';
+      $('dlbox').appendChild(b);
+      setStatus(statusEl, '生成完成，共 ' + order.length + ' 页。');
+    } catch (e) {
+      setStatus(statusEl, '处理失败：' + e.message, true);
+    }
+    btn.disabled = false;
+  };
+
+  $('btnClear').onclick = function () {
+    file = null; order = []; render();
+    $('pages').innerHTML = '';
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 元数据修改 - 查看与清除作者信息，不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线 PDF 元数据修改工具：查看并修改 PDF 的标题、作者、主题、关键词，支持一键清除个人信息，外发文件前保护隐私。浏览器本地处理不上传。">
+<meta name="keywords" content="pdf元数据,pdf属性修改,pdf作者,pdf标题修改,清除pdf信息,pdf去个人信息">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#convert">换算</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>PDF 处理<span>/</span>PDF 元数据修改</nav>
+
+  <div class="tool-head">
+    <h1>PDF 元数据修改</h1>
+    <p class="lead">查看并修改 PDF 内嵌的标题、作者、主题等信息，外发前抹掉你的名字与内部标题。</p>
+  </div>
+
+  <div class="note"><b>文件不上传</b><span>元数据的读取与写入都在本机完成，涉密文件可放心使用。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把 PDF 拖到这里，或点击选择</strong>
+      <small>选完会自动读出现有元数据</small>
+    </div>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div style="flex:2 1 260px">
+        <label class="fl" for="title">标题 Title</label>
+        <input type="text" id="title" placeholder="留空表示清除">
+      </div>
+      <div style="flex:2 1 260px">
+        <label class="fl" for="author">作者 Author</label>
+        <input type="text" id="author" placeholder="留空表示清除">
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <div style="flex:2 1 260px">
+        <label class="fl" for="subject">主题 Subject</label>
+        <input type="text" id="subject" placeholder="留空表示清除">
+      </div>
+      <div style="flex:2 1 260px">
+        <label class="fl" for="keywords">关键词 Keywords</label>
+        <input type="text" id="keywords" placeholder="多个关键词用逗号分隔">
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <div style="flex:2 1 260px">
+        <label class="fl" for="creator">创建程序 Creator</label>
+        <input type="text" id="creator" placeholder="如 AutoCAD / Word">
+      </div>
+      <div style="flex:2 1 260px">
+        <label class="fl" for="producer">生成程序 Producer</label>
+        <input type="text" id="producer" placeholder="如 Acrobat Distiller">
+      </div>
+    </div>
+
+    <div class="btns" style="margin-top:18px">
+      <button class="btn primary" id="btnRun" disabled>生成新 PDF</button>
+      <button class="btn" id="btnWipe" disabled>一键清空全部元数据</button>
+      <button class="btn" id="btnClear">清空文件</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <div class="btns" id="dlbox" style="margin-top:6px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>为什么要在外发前清理元数据</h2>
+    <p>PDF 文件内部除了正文，还会记录一批「文档属性」。这些信息平时看不见，但任何人用阅读器查看属性就能读到：</p>
+    <ul>
+      <li><strong>作者</strong>：常是你的系统登录名（如 <code>administrator</code> 或真实姓名）。</li>
+      <li><strong>标题</strong>：往往是内部完整文件名，可能含项目代号、客户名、版本号。</li>
+      <li><strong>创建/生成程序</strong>：暴露你用的软件与版本，例如从某造价软件导出的痕迹。</li>
+    </ul>
+    <p>投标文件、发给甲方的报价、对外公布的图纸册，都建议先清一遍。这类信息不构成技术泄密，但足以暴露内部流程与人员，属于「不必要的信息暴露」。</p>
+
+    <h2>操作说明</h2>
+    <p>拖入 PDF 后，表单会自动填好现有元数据。直接改内容，点「生成新 PDF」即可。<strong>原文件不会被修改</strong>，输出是一份新文件。若只想抹掉个人信息，点「一键清空全部元数据」再生成。</p>
+    <p>元数据支持中文，写入采用 PDF 标准的 Unicode 编码，不会出现乱码。</p>
+
+    <h2>说明</h2>
+    <p>本工具处理的是文档属性（Info 字典），不涉及 PDF 内嵌的 XMP 元数据包、书签、附件与注释。如果你的场景要求彻底清理（例如对外公开发布），除本文具外，还建议检查是否有内嵌附件与批注。</p>
+  </section>
+
+  <section class="related" id="related" data-current="pdf-metadata" data-cat="pdf"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/pdf-lib.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null, statusEl = $('status'), hadMeta = 0;
+  var FIELDS = ['title', 'author', 'subject', 'keywords', 'creator', 'producer'];
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+
+  function render() {
+    renderFileList($('list'), file ? [file] : [], function () {
+      file = null; render(); clearForm();
+      $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+    });
+    $('btnRun').disabled = !file;
+    $('btnWipe').disabled = !file;
+  }
+
+  function clearForm() {
+    FIELDS.forEach(function (f) { $(f).value = ''; });
+    hadMeta = 0;
+  }
+
+  function readMeta(doc) {
+    var g = {
+      title: function () { try { return doc.getTitle() || ''; } catch (e) { return ''; } },
+      author: function () { try { return doc.getAuthor() || ''; } catch (e) { return ''; } },
+      subject: function () { try { return doc.getSubject() || ''; } catch (e) { return ''; } },
+      keywords: function () { try { return doc.getKeywords() || ''; } catch (e) { return ''; } },
+      creator: function () { try { return doc.getCreator() || ''; } catch (e) { return ''; } },
+      producer: function () { try { return doc.getProducer() || ''; } catch (e) { return ''; } }
+    };
+    var filled = 0;
+    FIELDS.forEach(function (f) {
+      var v = g[f]() || '';
+      $(f).value = v;
+      if (String(v).trim()) filled++;
+    });
+    return filled;
+  }
+
+  bindDrop($('drop'), $('file'), async function (fs) {
+    var f = fs.filter(function (x) { return /\.pdf$/i.test(x.name); })[0];
+    if (!f) { toast('请选择 PDF 文件', 'err'); return; }
+    file = f; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = '';
+    try {
+      setStatus(statusEl, '正在读取元数据…');
+      var doc = await PDFLib.PDFDocument.load(await readAsArrayBuffer(f), { ignoreEncryption: true });
+      hadMeta = readMeta(doc);
+      var n = doc.getPageCount();
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + n + '</b><span>总页数</span></div>' +
+        '<div class="stat"><b>' + hadMeta + ' / 6</b><span>已有元数据字段</span></div>' +
+        '<div class="stat"><b>' + fmtSize(f.size) + '</b><span>文件体积</span></div>';
+      setStatus(statusEl, hadMeta
+        ? '已读出现有元数据，共 ' + hadMeta + ' 个字段有内容。修改后点「生成新 PDF」。'
+        : '这个文件的元数据基本是空的。');
+    } catch (e) {
+      clearForm();
+      setStatus(statusEl, '读取失败：' + e.message, true);
+    }
+  });
+
+  $('btnWipe').onclick = function () {
+    clearForm();
+    setStatus(statusEl, '已清空全部字段，点「生成新 PDF」写入空白元数据。');
+    toast('已清空表单，记得生成新 PDF');
+  };
+
+  $('btnRun').onclick = async function () {
+    if (!file) return;
+    var btn = this; btn.disabled = true;
+    $('dlbox').innerHTML = '';
+    try {
+      var doc = await PDFLib.PDFDocument.load(await readAsArrayBuffer(file), { ignoreEncryption: true });
+      doc.setTitle($('title').value);
+      doc.setAuthor($('author').value);
+      doc.setSubject($('subject').value);
+      doc.setKeywords($('keywords').value);
+      doc.setCreator($('creator').value);
+      if ($('producer').value !== '') doc.setProducer($('producer').value);
+
+      setStatus(statusEl, '正在生成文件…');
+      var bytes = await doc.save();
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+
+      var filled = 0;
+      FIELDS.forEach(function (f) { if ($(f).value.trim()) filled++; });
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + doc.getPageCount() + '</b><span>总页数</span></div>' +
+        '<div class="stat"><b>' + filled + ' / 6</b><span>写入字段数</span></div>' +
+        '<div class="stat"><b>' + fmtSize(blob.size) + '</b><span>输出体积</span></div>';
+
+      var b = document.createElement('button');
+      b.className = 'btn primary';
+      b.textContent = '下载新 PDF';
+      b.onclick = function () { saveBlob(blob, baseName(file.name) + '_元数据已改.pdf'); };
+      $('dlbox').innerHTML = '';
+      $('dlbox').appendChild(b);
+      setStatus(statusEl, '已生成，元数据字段写入 ' + filled + ' 个。注意：修改元数据会重写文件结构，体积与原文可能不同。');
+    } catch (e) {
+      setStatus(statusEl, '处理失败：' + e.message, true);
+    }
+    btn.disabled = false;
+  };
+
+  $('btnClear').onclick = function () {
+    file = null; render(); clearForm();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, '');
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

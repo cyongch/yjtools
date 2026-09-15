@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>打地鼠 - 在线反应力小游戏，30 秒挑战 | 即用工具箱</title>
+<meta name="description" content="免费在线打地鼠游戏：地鼠随机冒头，趁它缩回去前敲中得分，30 秒计分并统计命中率与最高分。三种速度可选，手机也能玩。打开即玩。">
+<meta name="keywords" content="打地鼠,在线打地鼠,反应力游戏,30秒挑战,休闲小游戏,手速游戏,whack a mole">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+<style>
+  #field{background:linear-gradient(180deg,#2f6d4a,#25563a);border-radius:14px;padding:16px;
+         display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(100%,440px);margin:0 auto;
+         user-select:none;touch-action:manipulation}
+  .hole{position:relative;aspect-ratio:1;border-radius:50%;background:#1b3d29;
+        box-shadow:inset 0 8px 14px rgba(0,0,0,.55);overflow:hidden;cursor:pointer}
+  .mole{position:absolute;left:12%;right:12%;bottom:0;top:26%;border-radius:50% 50% 42% 42%;
+        background:#c98a4b;transform:translateY(110%);transition:transform .14s ease-out;
+        box-shadow:inset 0 -6px 10px rgba(0,0,0,.25)}
+  .mole::before,.mole::after{content:'';position:absolute;top:26%;width:13%;height:13%;
+        background:#2b1d10;border-radius:50%}
+  .mole::before{left:26%}
+  .mole::after{right:26%}
+  .mole.up{transform:translateY(6%)}
+  .mole.hit{background:#8fd6a8;transform:translateY(6%) scale(.9)}
+  .hud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .hud div{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 16px;text-align:center;min-width:82px}
+  .hud b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+  .hud span{font-size:12px;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#game">小游戏</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>小游戏 · 减压<span>/</span>打地鼠</nav>
+
+  <div class="tool-head">
+    <h1>打地鼠</h1>
+    <p class="lead">地鼠随机冒头，趁它缩回去之前敲中它。30 秒，看你能拿多少分。</p>
+  </div>
+
+  <div class="note"><b>纯本地运行</b><span>计时与判定全部在本机完成，不联网。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="speed">难度</label>
+        <select id="speed">
+          <option value="slow">悠闲（出得慢、待得久）</option>
+          <option value="mid" selected>适中</option>
+          <option value="fast">手速挑战（出得快）</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="dur">时长</label>
+        <select id="dur">
+          <option value="30" selected>30 秒</option>
+          <option value="60">60 秒</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+        <button class="btn primary" id="btnStart">开始游戏</button>
+      </div>
+    </div>
+
+    <div class="hud" style="margin-top:16px">
+      <div><b id="score">0</b><span>得分</span></div>
+      <div><b id="left">30</b><span>剩余秒数</span></div>
+      <div><b id="acc">—</b><span>命中率</span></div>
+      <div><b id="best">0</b><span>最高分</span></div>
+    </div>
+
+    <div id="field"></div>
+
+    <p id="status" class="hint" style="text-align:center">点「开始游戏」后，地鼠会随机从洞里冒出来。</p>
+  </section>
+
+  <section class="prose">
+    <h2>玩法</h2>
+    <p>游戏开始后，地鼠会随机从九个洞里冒出来并停留一小段时间。在它缩回去之前点到它，得 10 分。如果点空了（点在没有地鼠的洞上），不加分但会降低命中率统计。时间结束即结算。</p>
+
+    <h2>三种难度</h2>
+    <ul>
+      <li><strong>悠闲</strong>：地鼠出现频率低、停留时间长，可以慢悠悠地敲，纯粹放松。</li>
+      <li><strong>适中</strong>：正常的反应速度挑战。</li>
+      <li><strong>手速挑战</strong>：地鼠出现密集且停留很短，考验手眼协调，容易手忙脚乱。</li>
+    </ul>
+
+    <h2>小技巧</h2>
+    <ul>
+      <li>手指或鼠标停在棋盘中央，这样到任何一格的距离都最短，比来回大幅度移动快得多。</li>
+      <li>别盯着某几个洞看，用余光扫整个棋盘——这叫"分散注意"，比集中盯一点命中率更高。</li>
+      <li>不要乱点。乱点虽然偶尔能蒙中，但命中率会掉得很难看，而且会打乱你的判断节奏。</li>
+      <li>出现两只地鼠时，先敲更快要缩回去的那只。</li>
+    </ul>
+
+    <h2>关于减压</h2>
+    <p>这类"反应型"小游戏的正反馈很直接：敲中就有一分，没有需要记忆的规则，也没有失败惩罚。忙里偷闲玩 30 秒，比刷一段短视频更不容易让人陷入"停不下来"的循环——因为它有明确的结束点。</p>
+  </section>
+
+  <section class="related" id="related" data-current="game-whack" data-cat="game"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var HOLES = 9;
+  var CFG = {
+    slow: { spawn: 900, stay: 1400 },
+    mid: { spawn: 620, stay: 950 },
+    fast: { spawn: 420, stay: 620 }
+  };
+  var score = 0, hits = 0, misses = 0, left = 30, playing = false;
+  var best = 0, spawnTimer = null, countTimer = null, moles = [];
+
+  try { best = parseInt(localStorage.getItem('yjtwhackbest'), 10) || 0; } catch (e) { best = 0; }
+
+  function build() {
+    var f = $('field');
+    f.innerHTML = '';
+    moles = [];
+    for (var i = 0; i < HOLES; i++) {
+      var h = document.createElement('div');
+      h.className = 'hole';
+      var m = document.createElement('div');
+      m.className = 'mole';
+      h.appendChild(m);
+      h.dataset.i = String(i);
+      f.appendChild(h);
+      moles.push({ el: m, up: false, timer: null });
+    }
+    $('best').textContent = best;
+  }
+
+  function hud() {
+    $('score').textContent = score;
+    $('left').textContent = left;
+    var total = hits + misses;
+    $('acc').textContent = total ? Math.round(hits / total * 100) + '%' : '—';
+  }
+
+  function popUp() {
+    var free = [];
+    for (var i = 0; i < HOLES; i++) if (!moles[i].up) free.push(i);
+    if (!free.length) return;
+    var k = free[Math.floor(Math.random() * free.length)];
+    var m = moles[k];
+    m.up = true;
+    m.el.classList.remove('hit');
+    m.el.classList.add('up');
+    m.timer = setTimeout(function () {
+      m.up = false;
+      m.el.classList.remove('up');
+    }, CFG[$('speed').value].stay);
+  }
+
+  function down(i) {
+    var m = moles[i];
+    if (m.timer) { clearTimeout(m.timer); m.timer = null; }
+    m.up = false;
+    m.el.classList.remove('up');
+  }
+
+  function start() {
+    var cfg = CFG[$('speed').value];
+    score = 0; hits = 0; misses = 0;
+    left = parseInt($('dur').value, 10);
+    playing = true;
+    build(); hud();
+    $('btnStart').textContent = '重新开始';
+    $('status').textContent = '开始了！趁地鼠缩回去之前敲中它。';
+
+    spawnTimer = setInterval(popUp, cfg.spawn);
+    countTimer = setInterval(function () {
+      left--;
+      hud();
+      if (left <= 0) stop();
+    }, 1000);
+  }
+
+  function stop() {
+    playing = false;
+    clearInterval(spawnTimer); clearInterval(countTimer);
+    spawnTimer = countTimer = null;
+    moles.forEach(function (m, i) { down(i); });
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem('yjtwhackbest', String(best)); } catch (e) {}
+    }
+    hud();
+    $('status').textContent = '时间到！得分 ' + score + '，命中 ' + hits + ' 次，命中率 ' +
+      ((hits + misses) ? Math.round(hits / (hits + misses) * 100) + '%' : '—') + '。';
+    toast('时间到，得分 ' + score);
+    $('btnStart').textContent = '再来一局';
+  }
+
+  $('field').addEventListener('click', function (e) {
+    if (!playing) { toast('先点「开始游戏」', 'err'); return; }
+    var hole = e.target.closest ? e.target.closest('.hole') : null;
+    if (!hole) return;
+    var i = parseInt(hole.dataset.i, 10);
+    var m = moles[i];
+    if (m.up) {
+      score += 10; hits++;
+      m.el.classList.add('hit');
+      m.el.classList.remove('up');
+      if (m.timer) { clearTimeout(m.timer); m.timer = null; }
+      m.up = false;
+      setTimeout(function () { m.el.classList.remove('hit'); }, 160);
+    } else {
+      misses++;
+    }
+    hud();
+  });
+
+  $('btnStart').onclick = function () {
+    if (playing) { clearInterval(spawnTimer); clearInterval(countTimer); playing = false; }
+    start();
+  };
+  $('speed').addEventListener('change', function () { if (playing) { stop(); } });
+  $('dur').addEventListener('change', function () { if (playing) { stop(); } });
+
+  build();
+  hud();
+})();
+</script>
+</body>
+</html>

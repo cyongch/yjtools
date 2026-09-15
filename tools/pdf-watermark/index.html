@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 加水印 - 在线添加文字水印（支持中文），不上传 | 即用工具箱</title>
+<meta name="description" content="免费在线 PDF 加水印工具，支持中文文字水印、九宫格定位、斜向平铺、透明度与旋转角度调节，实时预览。浏览器本地处理，文件不上传、无水印限制。">
+<meta name="keywords" content="pdf加水印,pdf水印工具,在线加pdf水印,中文水印,pdf密级标识,投标文件水印">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>PDF 处理<span>/</span>PDF 加水印</nav>
+
+  <div class="tool-head">
+    <h1>PDF 加水印</h1>
+    <p class="lead">给每一页叠加文字水印，中文正常显示，位置、字号、透明度、平铺都可调。</p>
+  </div>
+
+  <div class="note"><b>文件不上传</b><span>水印在本机绘制并写入，报价单、合同、图纸不出本机。</span></div>
+
+  <section class="panel">
+    <div class="drop" id="drop">
+      <div class="ico"></div>
+      <strong>把 PDF 拖到这里，或点击选择</strong>
+      <small>选完自动读取第一页尺寸并生成预览</small>
+    </div>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    <ul class="files" id="list"></ul>
+
+    <div class="row" style="margin-top:16px">
+      <div style="flex:2 1 260px">
+        <label class="fl" for="text">水印文字</label>
+        <input type="text" id="text" value="内部资料 严禁外传" placeholder="例如：仅供投标使用">
+      </div>
+      <div>
+        <label class="fl" for="size">字号（pt）</label>
+        <input type="number" id="size" value="40" min="6" max="300" step="2">
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <div>
+        <label class="fl" for="color">颜色</label>
+        <select id="color">
+          <option value="#ff0000">红色</option>
+          <option value="#000000">黑色</option>
+          <option value="#0066cc">蓝色</option>
+          <option value="#888888" selected>灰色</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="pos">位置</label>
+        <select id="pos">
+          <option value="0">左上角</option>
+          <option value="1">顶部居中</option>
+          <option value="2">右上角</option>
+          <option value="3">左侧居中</option>
+          <option value="4" selected>正中</option>
+          <option value="5">右侧居中</option>
+          <option value="6">左下角</option>
+          <option value="7">底部居中</option>
+          <option value="8">右下角</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <label class="fl" for="alpha">透明度：<span id="aval">20</span>%</label>
+      <input type="range" id="alpha" min="5" max="100" value="20" step="5" style="width:100%;max-width:420px">
+    </div>
+    <div style="margin-top:10px">
+      <label class="fl" for="rotate">旋转角度：<span id="rval">0</span>°</label>
+      <input type="range" id="rotate" min="-90" max="90" value="0" step="5" style="width:100%;max-width:420px">
+    </div>
+
+    <div class="btns" style="margin-top:14px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-2)">
+        <input type="checkbox" id="tile"> 平铺整页（建议配 30° 与 15%–25% 透明度）
+      </label>
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnRun" disabled>添加水印并导出</button>
+      <button class="btn" id="btnClear">清空</button>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <div class="btns" id="dlbox" style="margin-top:6px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="panel">
+    <label class="fl">效果预览（按第一页比例模拟）</label>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;overflow:auto">
+      <canvas id="preview" width="420" height="594" style="max-width:100%;border:1px solid var(--border);border-radius:6px;background:#fff"></canvas>
+      <p class="hint" id="pv-hint" style="margin-top:10px">选择 PDF 后在此预览水印效果</p>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h2>参数建议</h2>
+    <ul>
+      <li><strong>密级标识</strong>：正中，红色，透明度 15%–20%，字号约页面宽度的 6%。类似盖章的"内部资料"效果。</li>
+      <li><strong>防外传</strong>：勾选「平铺整页」，角度 30°，透明度 15%–25%。整页铺满淡色文字，拍照转发后仍可辨认来源。</li>
+      <li><strong>来源标识</strong>：右下角，灰色，透明度 50%，字号小一些（约页面宽 2.5%）。不遮挡内容又能标明出处。</li>
+    </ul>
+
+    <h2>为什么中文能正常显示</h2>
+    <p>PDF 的水印本质是往页面里插入一段绘制指令。常规做法要往文件里嵌入一个中文字体（通常 5–15MB），既拖慢速度又让文件变大。本工具换了个思路：<strong>先把水印文字在浏览器里绘制成一张透明图片，再把这张小图贴到每一页上</strong>。这样中文、特殊符号都能正常显示，而且不增加字体体积，输出文件只增大几十 KB。</p>
+    <p>代价是水印是图片而非可选中文字——这恰好也是你想要的：做水印就是为了让人不方便修改。</p>
+
+    <h2>合规提示</h2>
+    <p>水印由你自行设置。请勿使用本工具在无权标注、或可能误导他人的文件上添加虚假标识（例如冒用其他单位名称、伪造密级）。</p>
+  </section>
+
+  <section class="related" id="related" data-current="pdf-watermark" data-cat="pdf"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../vendor/pdf-lib.min.js"></script>
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var file = null, totalPages = 0, pageSize = null, statusEl = $('status'), timer = null;
+
+  function baseName(n) { return n.replace(/\.[^.]+$/, ''); }
+  var FONT = '"PingFang SC","Microsoft YaHei","Heiti SC",sans-serif';
+
+  /** 把文字绘制成透明 PNG 画布 */
+  function makeTextCanvas(text, fontSize, color) {
+    var pad = Math.ceil(fontSize * 0.4);
+    var probe = document.createElement('canvas').getContext('2d');
+    probe.font = '500 ' + fontSize + 'px ' + FONT;
+    var tw = Math.ceil(probe.measureText(text).width);
+    var w = tw + pad * 2;
+    var h = Math.ceil(fontSize * 1.6);
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    var ctx = cv.getContext('2d');
+    ctx.font = '500 ' + fontSize + 'px ' + FONT;
+    ctx.fillStyle = color;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillText(text, pad, h / 2);
+    return cv;
+  }
+
+  /** 在 2D 画布上模拟绘制（用于预览），W/H 为画布尺寸，k 为相对 PDF 点位的缩放 */
+  function paintPreview(ctx, W, H, k) {
+    var text = $('text').value;
+    if (!text) return;
+    var size = (parseFloat($('size').value) || 40) * k;
+    var rot = (parseFloat($('rotate').value) || 0) * Math.PI / 180;
+    ctx.save();
+    ctx.globalAlpha = (parseFloat($('alpha').value) || 20) / 100;
+    ctx.fillStyle = $('color').value;
+    ctx.font = '500 ' + Math.max(5, size) + 'px ' + FONT;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if ($('tile').checked) {
+      var tw = ctx.measureText(text).width;
+      var stepX = tw + size * 2.2;
+      var stepY = size * 4;
+      ctx.translate(W / 2, H / 2);
+      ctx.rotate(rot);
+      ctx.translate(-W / 2, -H / 2);
+      for (var y = -H * 0.4; y < H * 1.4; y += stepY) {
+        for (var x = -W * 0.4; x < W * 1.4; x += stepX) ctx.fillText(text, x, y);
+      }
+      ctx.restore();
+      return;
+    }
+    var padm = size * 1.2 + 6;
+    var idx = parseInt($('pos').value, 10);
+    var xs = [padm, W / 2, W - padm], ys = [padm, H / 2, H - padm];
+    ctx.translate(xs[idx % 3], ys[Math.floor(idx / 3)]);
+    ctx.rotate(rot);
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  }
+
+  function drawPreview() {
+    var cv = $('preview'), ctx = cv.getContext('2d');
+    if (!pageSize) {
+      cv.width = 420; cv.height = 594;
+      ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = '#c9ced6'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('选择 PDF 后显示预览', cv.width / 2, cv.height / 2);
+      return;
+    }
+    var pw = pageSize[0], ph = pageSize[1];
+    var maxW = 420;
+    var k = Math.min(maxW / pw, 1.2);
+    cv.width = Math.round(pw * k);
+    cv.height = Math.round(ph * k);
+    ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.strokeStyle = '#e4e7ec'; ctx.strokeRect(0.5, 0.5, cv.width - 1, cv.height - 1);
+    ctx.save();
+    ctx.strokeStyle = '#eef1f4';
+    for (var y = 60; y < cv.height; y += 28) {
+      ctx.beginPath(); ctx.moveTo(24, y); ctx.lineTo(cv.width - 24, y); ctx.stroke();
+    }
+    ctx.restore();
+    paintPreview(ctx, cv.width, cv.height, k);
+    $('pv-hint').textContent = '页面尺寸 ' + pw.toFixed(0) + ' × ' + ph.toFixed(0) + ' pt（预览为示意，实际导出写入全部 ' + totalPages + ' 页）';
+  }
+
+  function schedule() { clearTimeout(timer); timer = setTimeout(drawPreview, 90); }
+  ['text', 'size', 'color', 'pos', 'alpha', 'rotate', 'tile'].forEach(function (id) {
+    $(id).addEventListener('input', schedule);
+    $(id).addEventListener('change', schedule);
+  });
+  $('alpha').addEventListener('input', function () { $('aval').textContent = this.value; });
+  $('rotate').addEventListener('input', function () { $('rval').textContent = this.value; });
+
+  function render() {
+    renderFileList($('list'), file ? [file] : [], function () {
+      file = null; totalPages = 0; pageSize = null; render();
+      $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, ''); drawPreview();
+    });
+    $('btnRun').disabled = !file;
+  }
+
+  bindDrop($('drop'), $('file'), async function (fs) {
+    var f = fs.filter(function (x) { return /\.pdf$/i.test(x.name); })[0];
+    if (!f) { toast('请选择 PDF 文件', 'err'); return; }
+    file = f; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = '';
+    try {
+      setStatus(statusEl, '正在读取页面尺寸…');
+      var doc = await PDFLib.PDFDocument.load(await readAsArrayBuffer(f), { ignoreEncryption: true });
+      totalPages = doc.getPageCount();
+      var sz = doc.getPage(0).getSize();
+      pageSize = [sz.width, sz.height];
+      $('stats').innerHTML = '<div class="stat"><b>' + totalPages + '</b><span>总页数</span></div>' +
+        '<div class="stat"><b>' + fmtSize(f.size) + '</b><span>文件体积</span></div>';
+      setStatus(statusEl, '已读取：' + f.name + '，共 ' + totalPages + ' 页。');
+      drawPreview();
+    } catch (e) {
+      setStatus(statusEl, '读取失败：' + e.message, true);
+    }
+  });
+
+  function canvasToBytes(cv) {
+    return new Promise(function (res, rej) {
+      cv.toBlob(function (b) {
+        if (!b) { rej(new Error('水印生成失败')); return; }
+        b.arrayBuffer().then(function (ab) { res(new Uint8Array(ab)); });
+      }, 'image/png');
+    });
+  }
+
+  $('btnRun').onclick = async function () {
+    if (!file || !totalPages) return;
+    var text = $('text').value.trim();
+    if (!text) { toast('请先填写水印文字', 'err'); return; }
+    var btn = this; btn.disabled = true;
+    $('dlbox').innerHTML = '';
+    try {
+      setStatus(statusEl, '正在生成水印素材…');
+      var size = parseFloat($('size').value) || 40;
+      var color = $('color').value;
+      var alpha = (parseFloat($('alpha').value) || 20) / 100;
+      var rot = parseFloat($('rotate').value) || 0;
+      var tile = $('tile').checked;
+
+      var cv = makeTextCanvas(text, size, color);
+      var pngBytes = await canvasToBytes(cv);
+
+      setStatus(statusEl, '正在写入页面…');
+      var doc = await PDFLib.PDFDocument.load(await readAsArrayBuffer(file), { ignoreEncryption: true });
+      var embedded = await doc.embedPng(pngBytes);
+      var pages = doc.getPages();
+      var iw = embedded.width, ih = embedded.height;
+
+      pages.forEach(function (pg) {
+        var s = pg.getSize();
+        var W = s.width, H = s.height;
+        if (tile) {
+          var stepX = iw + size * 2.2;
+          var stepY = size * 4;
+          for (var y = H - stepY * 0.5; y > -stepY; y -= stepY) {
+            for (var x = -iw * 0.3; x < W + iw; x += stepX) {
+              pg.drawImage(embedded, { x: x, y: y, width: iw, height: ih, opacity: alpha, rotate: PDFLib.degrees(rot) });
+            }
+          }
+        } else {
+          var padm = size * 1.2 + 6;
+          var idx = parseInt($('pos').value, 10);
+          var xs = [padm, W / 2 - iw / 2, W - iw - padm];
+          var ys = [H - padm - ih, H / 2 - ih / 2, padm];
+          var cx = xs[idx % 3] + iw / 2, cy = ys[Math.floor(idx / 3)] + ih / 2;
+          // pdf-lib 的 rotate 绕绘制起点逆时针旋转，需按旋转矩阵反推起点，保证图像中心落在目标点
+          var th = rot * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th);
+          pg.drawImage(embedded, {
+            x: cx - (iw / 2) * cs + (ih / 2) * sn,
+            y: cy - (iw / 2) * sn - (ih / 2) * cs,
+            width: iw, height: ih,
+            opacity: alpha, rotate: PDFLib.degrees(rot)
+          });
+        }
+      });
+
+      var bytes = await doc.save();
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+      $('stats').innerHTML =
+        '<div class="stat"><b>' + totalPages + '</b><span>已加印页数</span></div>' +
+        '<div class="stat"><b>' + (alpha * 100).toFixed(0) + '%</b><span>透明度</span></div>' +
+        '<div class="stat"><b>' + fmtSize(blob.size) + '</b><span>输出体积</span></div>';
+      var b = document.createElement('button');
+      b.className = 'btn primary';
+      b.textContent = '下载加水印的 PDF';
+      b.onclick = function () { saveBlob(blob, baseName(file.name) + '_水印.pdf'); };
+      $('dlbox').innerHTML = '';
+      $('dlbox').appendChild(b);
+      setStatus(statusEl, '已在全部 ' + totalPages + ' 页写入水印，点击上方按钮下载。');
+    } catch (e) {
+      setStatus(statusEl, '处理失败：' + e.message, true);
+    }
+    btn.disabled = false;
+  };
+
+  $('btnClear').onclick = function () {
+    file = null; totalPages = 0; pageSize = null; render();
+    $('stats').innerHTML = ''; $('dlbox').innerHTML = ''; setStatus(statusEl, ''); drawPreview();
+  };
+
+  $('aval').textContent = $('alpha').value;
+  $('rval').textContent = $('rotate').value;
+  render();
+  drawPreview();
+})();
+</script>
+</body>
+</html>

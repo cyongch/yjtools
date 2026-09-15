@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人民币金额大写转换 - 数字转中文大写 | 即用工具箱</title>
+<meta name="description" content="免费在线金额大写转换工具，把数字金额转成规范中文大写（壹贰叁…元角分整），正确处理零、万、亿与角分进位，适合合同、报销单、借据填写。本地计算不上传。">
+<meta name="keywords" content="金额大写,人民币大写,数字转大写,大写金额转换,财务大写,壹贰叁,元角分,合同金额大写">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#convert">换算</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>计算与转换<span>/</span>人民币金额大写</nav>
+
+  <div class="tool-head">
+    <h1>人民币金额大写</h1>
+    <p class="lead">数字金额转规范中文大写，零、万、亿、角、分的处理符合财务书写习惯。</p>
+  </div>
+
+  <div class="note"><b>不上传任何数据</b><span>纯本地计算，可断网使用。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div style="flex:2 1 280px">
+        <label class="fl" for="num">数字金额（元）</label>
+        <input type="text" id="num" value="1234.56" inputmode="decimal" autocomplete="off">
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+        <button class="btn" id="btnClear">清空</button>
+      </div>
+    </div>
+
+    <p class="fl" style="margin-top:20px">中文大写</p>
+    <div id="out" style="background:var(--accent-w);border:1px solid var(--accent-b);border-radius:12px;padding:20px;font-size:19px;font-weight:500;letter-spacing:1px;line-height:1.7;min-height:64px;word-break:break-all"></div>
+
+    <div class="btns" style="margin-top:14px">
+      <button class="btn primary" id="btnCopy">复制大写</button>
+      <button class="btn" id="btnCopyAll">复制「小写 + 大写」</button>
+    </div>
+
+    <p class="fl" style="margin-top:20px">常用示例</p>
+    <div class="btns">
+      <button class="btn sm" data-demo="1234.56">1234.56</button>
+      <button class="btn sm" data-demo="10000">1 万元</button>
+      <button class="btn sm" data-demo="100000000">1 亿元</button>
+      <button class="btn sm" data-demo="100000001">1 亿零 1 元</button>
+      <button class="btn sm" data-demo="1001">1001</button>
+      <button class="btn sm" data-demo="20.05">20.05</button>
+      <button class="btn sm" data-demo="0.5">0.5 元</button>
+      <button class="btn sm" data-demo="0.05">0.05 元</button>
+      <button class="btn sm" data-demo="0">0</button>
+    </div>
+    <p id="status" class="hint">输入时实时转换，支持最多到「万亿」量级。</p>
+  </section>
+
+  <section class="prose">
+    <h2>财务书写规则</h2>
+    <ul>
+      <li><strong>用字</strong>：一律用「壹贰叁肆伍陆柒捌玖拾佰仟万亿元角分整」，不用「一二三」。</li>
+      <li><strong>「整」的处理</strong>：金额到「元」为止没有角分时，元后写「整」。如 <code>100</code> → 壹佰元整。</li>
+      <li><strong>「零」的处理</strong>：中间有一个或多个零时只写一个「零」；连续零后接非零数字时才写零。如 <code>1001</code> → 壹仟零壹元整；<code>100001</code> → 壹拾万零壹元整。</li>
+      <li><strong>角分为零</strong>：<code>20.05</code> → 贰拾元零伍分。元后有零角时写「零」再接分，这是常被写错的地方。</li>
+      <li><strong>不足一元</strong>：<code>0.05</code> → 零元零伍分；<code>0.5</code> → 零元伍角。</li>
+    </ul>
+
+    <h2>为什么容易写错</h2>
+    <p>手工写大额金额时，最容易出错的是「中间零」的数量和「万、亿」的进位。例如 <code>100000001</code>，正确写法是「壹亿零壹元整」——只写一个零，而不是写七个零。本工具按上述规则自动处理，避免手写歧义。</p>
+    <p>另外提醒：正式票据与合同中，大写金额与小写金额<strong>必须一致</strong>；一旦不一致，按《票据法》与司法解释，通常以大写为准或直接认定票据无效，因此建议用工具生成后逐字核对。</p>
+  </section>
+
+  <section class="related" id="related" data-current="rmb-upper" data-cat="convert"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  var D = '零壹贰叁肆伍陆柒捌玖';
+  var U = ['', '拾', '佰', '仟'];
+
+  function four(n) {
+    var s = '', zero = false, pos = 0;
+    while (n > 0) {
+      var d = n % 10;
+      if (d === 0) {
+        if (s !== '' && !zero) { s = '零' + s; zero = true; }
+      } else {
+        s = D.charAt(d) + U[pos] + s;
+        zero = false;
+      }
+      n = Math.floor(n / 10);
+      pos++;
+    }
+    return s;
+  }
+
+  function toUpper(num) {
+    if (typeof num !== 'number' || !isFinite(num)) return '';
+    var neg = num < 0;
+    var n = Math.abs(num);
+    if (n > 999999999999.99) return '超出可处理范围（限人民币万亿元以下）';
+
+    var cents = Math.round(n * 100);
+    var yuan = Math.floor(cents / 100);
+    var jiao = Math.floor((cents % 100) / 10);
+    var fen = cents % 10;
+
+    var yi = Math.floor(yuan / 1e8);
+    var wan = Math.floor((yuan % 1e8) / 1e4);
+    var ge = yuan % 1e4;
+
+    var out = '';
+    if (yi > 0) out += four(yi) + '亿';
+    if (wan > 0) {
+      if (out && wan < 1000) out += '零';
+      out += four(wan) + '万';
+    }
+    if (ge > 0) {
+      if (out && ge < 1000) out += '零';
+      out += four(ge);
+    }
+    if (out === '') out = '零';
+
+    var head = neg ? '负' : '';
+    if (jiao === 0 && fen === 0) return head + out + '元整';
+
+    var tail = '';
+    if (jiao > 0) {
+      tail += D.charAt(jiao) + '角';
+      if (fen > 0) tail += D.charAt(fen) + '分';
+    } else if (fen > 0) {
+      tail += '零' + D.charAt(fen) + '分';
+    }
+    return head + out + '元' + tail;
+  }
+
+  function run() {
+    var raw = $('num').value.trim().replace(/[,，\s]/g, '').replace(/[¥￥]/g, '');
+    var out = $('out');
+    if (raw === '') { out.textContent = '—'; setStatus($('status'), '输入金额后自动转换。'); return; }
+    var v = parseFloat(raw);
+    if (isNaN(v)) { out.textContent = '—'; setStatus($('status'), '请输入有效的数字金额。', true); return; }
+    var s = toUpper(v);
+    out.textContent = s;
+    setStatus($('status'), '小写：' + v.toFixed(2) + ' 元　→　大写：' + s);
+  }
+
+  $('num').addEventListener('input', run);
+  $('btnClear').onclick = function () { $('num').value = ''; run(); };
+  $('btnCopy').onclick = function () {
+    if ($('out').textContent === '—') { toast('还没有结果', 'err'); return; }
+    copyText($('out').textContent);
+  };
+  $('btnCopyAll').onclick = function () {
+    if ($('out').textContent === '—') { toast('还没有结果', 'err'); return; }
+    var v = parseFloat($('num').value.replace(/[,，\s¥￥]/g, ''));
+    copyText('小写：¥' + v.toFixed(2) + '\n大写：' + $('out').textContent);
+  };
+  document.querySelectorAll('[data-demo]').forEach(function (b) {
+    b.onclick = function () { $('num').value = b.dataset.demo; run(); };
+  });
+
+  run();
+})();
+</script>
+</body>
+</html>

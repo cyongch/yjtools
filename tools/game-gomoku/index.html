@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>五子棋 - 在线人机对战/双人对战，免费 | 即用工具箱</title>
+<meta name="description" content="免费在线五子棋：可人机对战或双人对下，AI 对手有棋力、能挡活三活四，支持悔棋、先手选择与胜负连线提示。打开即玩，无需登录。">
+<meta name="keywords" content="五子棋,在线五子棋,五子棋人机对战,五子棋小游戏,连珠,在线下棋,免费五子棋">
+<link rel="stylesheet" href="../../assets/style.css?v=202609151500">
+<style>
+  .board-wrap{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;overflow:auto}
+  #cv{max-width:100%;border-radius:8px;cursor:pointer;touch-action:manipulation;display:block;margin:0 auto}
+  .turnbar{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:14px;font-size:15px;font-weight:500}
+  .stone{width:18px;height:18px;border-radius:50%;display:inline-block;border:1px solid #999}
+  .stone.b{background:#1a1a1a;border-color:#000}
+  .stone.w{background:#fafafa}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="../../index.html"><span class="dot"></span>即用工具箱</a>
+    <nav><a href="../../index.html#text">文本编码</a><a href="../../index.html#image">图片</a><a href="../../index.html#pdf">PDF</a><a href="../../index.html#game">小游戏</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="../../index.html">首页</a><span>/</span>小游戏 · 减压<span>/</span>五子棋</nav>
+
+  <div class="tool-head">
+    <h1>五子棋</h1>
+    <p class="lead">先连成五子者胜。可选人机对战或两人轮流下，AI 会主动封堵你的活三活四。</p>
+  </div>
+
+  <div class="note"><b>纯本地运行</b><span>棋盘计算在本机完成，可断网玩，不会记录任何数据。</span></div>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <label class="fl" for="mode">对战模式</label>
+        <select id="mode">
+          <option value="ai">人机对战</option>
+          <option value="pvp">双人轮流（同一设备）</option>
+        </select>
+      </div>
+      <div id="boxSide">
+        <label class="fl" for="side">我的执子</label>
+        <select id="side">
+          <option value="1">我执黑（先手）</option>
+          <option value="2">我执白（后手）</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl" for="level">AI 棋力</label>
+        <select id="level">
+          <option value="1">轻松（只看一步）</option>
+          <option value="2" selected>标准</option>
+          <option value="3">较强（多算一层）</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btns" style="margin-top:16px">
+      <button class="btn primary" id="btnNew">重新开局</button>
+      <button class="btn" id="btnUndo">悔棋</button>
+      <button class="btn" id="btnHint">提示一手</button>
+    </div>
+
+    <div class="board-wrap" style="margin-top:16px">
+      <canvas id="cv" width="544" height="544"></canvas>
+      <div class="turnbar" id="turnbar"></div>
+    </div>
+
+    <div class="stat-grid" id="stats" style="margin-top:16px"></div>
+    <p id="status" class="hint"></p>
+  </section>
+
+  <section class="prose">
+    <h2>玩法</h2>
+    <p>在 15×15 的棋盘上，双方轮流落子，<strong>先在横、竖、斜任意方向连成五个同色棋子的一方获胜</strong>。点击棋盘交叉点即可落子，最后一手会用红点标出，分出胜负时会把连成的那五个子连成红线。</p>
+
+    <h2>术语速查</h2>
+    <ul>
+      <li><strong>活三</strong>：三子相连且两端都空。下一步可以变成活四，必须挡。</li>
+      <li><strong>冲四</strong>：四子相连但只有一端能成五。对方必须立即封堵，否则直接输。</li>
+      <li><strong>活四</strong>：四子相连且两端都空。这是必胜局面，无法防守。</li>
+      <li><strong>双三 / 双四</strong>：同时形成两个活三或两个冲四，对方只能挡一个，因此也是必胜。</li>
+    </ul>
+
+    <h2>关于 AI</h2>
+    <p>AI 用的是启发式评估，不是穷举搜索：它会给每个可落子的位置打分，既看"我下这里能形成多大的棋形"，也看"对手下这里会有多大威胁"，两者加权后取最高分。<strong>标准</strong>难度下它会主动封堵你的活三与冲四，但受"只看一步"的限制，连续做双三（双威胁）仍然可以赢它。想纯放松就选"轻松"，想认真下就选"较强"。</p>
+
+    <h2>小技巧</h2>
+    <ul>
+      <li>先手不要一上来就贴边下，前三手向中心靠拢更容易展开。</li>
+      <li>进攻优于防守：与其被动挡，不如制造一个对方必须回应的威胁。</li>
+      <li>多留意斜线，初学者最容易漏掉斜向的四连。</li>
+    </ul>
+  </section>
+
+  <section class="related" id="related" data-current="game-gomoku" data-cat="game"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><span>即用工具箱 · 所有处理均在本机完成</span><a href="../../index.html" class="sp">返回首页</a></div>
+</footer>
+
+<script src="../../assets/tools-data.js?v=202609151500"></script>
+<script src="../../assets/app.js?v=202609151500"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var N = 15, CELL = 36, PAD = 20, R = 0.42;
+  var cv = $('cv'), ctx = cv.getContext('2d');
+  var board, turn, history, over, winLine, human, thinking = false;
+
+  function inb(x, y) { return x >= 0 && x < N && y >= 0 && y < N; }
+
+  function reset() {
+    board = [];
+    for (var y = 0; y < N; y++) {
+      board.push([]);
+      for (var x = 0; x < N; x++) board[y].push(0);
+    }
+    turn = 1; history = []; over = false; winLine = null; thinking = false;
+    human = $('mode').value === 'pvp' ? 0 : parseInt($('side').value, 10);
+    draw(); updateBar();
+    $('status').textContent = '';
+    if (human === 2) setTimeout(aiTurn, 260);
+  }
+
+  function draw() {
+    ctx.fillStyle = '#e9c78f';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+
+    ctx.strokeStyle = '#96723c';
+    ctx.lineWidth = 1;
+    for (var i = 0; i < N; i++) {
+      var p = PAD + i * CELL;
+      ctx.beginPath(); ctx.moveTo(PAD, p); ctx.lineTo(PAD + (N - 1) * CELL, p); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p, PAD); ctx.lineTo(p, PAD + (N - 1) * CELL); ctx.stroke();
+    }
+
+    ctx.fillStyle = '#6b5227';
+    [[3, 3], [11, 3], [3, 11], [11, 11], [7, 7]].forEach(function (s) {
+      ctx.beginPath();
+      ctx.arc(PAD + s[0] * CELL, PAD + s[1] * CELL, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    for (var y = 0; y < N; y++) {
+      for (var x = 0; x < N; x++) {
+        var v = board[y][x];
+        if (!v) continue;
+        var cx = PAD + x * CELL, cy = PAD + y * CELL;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * R, 0, Math.PI * 2);
+        if (v === 1) { ctx.fillStyle = '#1c1c1c'; ctx.fill(); ctx.strokeStyle = '#000'; }
+        else { ctx.fillStyle = '#fbfbfb'; ctx.fill(); ctx.strokeStyle = '#c2c2c2'; }
+        ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
+
+    if (history.length && !over) {
+      var last = history[history.length - 1];
+      ctx.beginPath();
+      ctx.arc(PAD + last.x * CELL, PAD + last.y * CELL, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#e11d48'; ctx.fill();
+    }
+
+    if (winLine) {
+      ctx.beginPath();
+      ctx.moveTo(PAD + winLine[0].x * CELL, PAD + winLine[0].y * CELL);
+      ctx.lineTo(PAD + winLine[winLine.length - 1].x * CELL, PAD + winLine[winLine.length - 1].y * CELL);
+      ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke();
+    }
+  }
+
+  function updateBar() {
+    var bar = $('turnbar');
+    if (over) { bar.innerHTML = '<span style="color:var(--accent)">对局结束</span>'; }
+    else if (thinking) { bar.innerHTML = '<span class="stone ' + (turn === 1 ? 'b' : 'w') + '"></span> AI 正在思考…'; }
+    else {
+      var who = $('mode').value === 'pvp'
+        ? (turn === 1 ? '黑方' : '白方')
+        : (turn === human ? '轮到你' : 'AI');
+      bar.innerHTML = '<span class="stone ' + (turn === 1 ? 'b' : 'w') + '"></span> ' + who + '落子';
+    }
+
+    var n1 = 0, n2 = 0;
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) { if (board[y][x] === 1) n1++; else if (board[y][x] === 2) n2++; }
+    $('stats').innerHTML =
+      '<div class="stat"><b>' + history.length + '</b><span>已落子</span></div>' +
+      '<div class="stat"><b>' + n1 + '</b><span>黑子</span></div>' +
+      '<div class="stat"><b>' + n2 + '</b><span>白子</span></div>';
+  }
+
+  function checkWin(x, y, p) {
+    var dirs = [[1, 0], [0, 1], [1, 1], [1, -1]];
+    for (var d = 0; d < 4; d++) {
+      var line = [{ x: x, y: y }];
+      var s, nx, ny;
+      for (s = 1; s < 5; s++) {
+        nx = x + dirs[d][0] * s; ny = y + dirs[d][1] * s;
+        if (inb(nx, ny) && board[ny][nx] === p) line.push({ x: nx, y: ny }); else break;
+      }
+      for (s = 1; s < 5; s++) {
+        nx = x - dirs[d][0] * s; ny = y - dirs[d][1] * s;
+        if (inb(nx, ny) && board[ny][nx] === p) line.unshift({ x: nx, y: ny }); else break;
+      }
+      if (line.length >= 5) return line;
+    }
+    return null;
+  }
+
+  function place(x, y, p) {
+    board[y][x] = p;
+    history.push({ x: x, y: y, p: p });
+    var line = checkWin(x, y, p);
+    if (line) {
+      over = true; winLine = line;
+      var msg;
+      if ($('mode').value === 'pvp') msg = (p === 1 ? '黑方' : '白方') + '五子连珠，获胜！';
+      else msg = (p === human ? '你赢了！' : 'AI 获胜，再来一局？');
+      $('status').textContent = msg;
+    }
+    turn = p === 1 ? 2 : 1;
+    draw(); updateBar();
+    return over;
+  }
+
+  function scoreTable(cnt, open) {
+    if (cnt >= 5) return 1000000;
+    if (cnt === 4) return open >= 1 ? 120000 : 15000;
+    if (cnt === 3) return open >= 2 ? 14000 : (open === 1 ? 1400 : 0);
+    if (cnt === 2) return open >= 2 ? 800 : (open === 1 ? 100 : 0);
+    return open >= 2 ? 24 : 8;
+  }
+
+  function pointScore(x, y, p) {
+    var s = 0;
+    var dirs = [[1, 0], [0, 1], [1, 1], [1, -1]];
+    for (var d = 0; d < 4; d++) {
+      var cnt = 1, open = 0, i, nx, ny;
+      for (i = 1; i < 5; i++) {
+        nx = x + dirs[d][0] * i; ny = y + dirs[d][1] * i;
+        if (!inb(nx, ny)) break;
+        if (board[ny][nx] === p) cnt++;
+        else { if (board[ny][nx] === 0) open++; break; }
+      }
+      for (i = 1; i < 5; i++) {
+        nx = x - dirs[d][0] * i; ny = y - dirs[d][1] * i;
+        if (!inb(nx, ny)) break;
+        if (board[ny][nx] === p) cnt++;
+        else { if (board[ny][nx] === 0) open++; break; }
+      }
+      s += scoreTable(cnt, open);
+    }
+    return s;
+  }
+
+  function candidates() {
+    var empty = true, out = [];
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) if (board[y][x]) empty = false;
+    if (empty) return [{ x: 7, y: 7 }];
+    for (var y2 = 0; y2 < N; y2++) {
+      for (var x2 = 0; x2 < N; x2++) {
+        if (board[y2][x2]) continue;
+        var near = false;
+        for (var dy = -2; dy <= 2 && !near; dy++) {
+          for (var dx = -2; dx <= 2; dx++) {
+            var nx = x2 + dx, ny = y2 + dy;
+            if (inb(nx, ny) && board[ny][nx]) { near = true; break; }
+          }
+        }
+        if (near) out.push({ x: x2, y: y2 });
+      }
+    }
+    return out;
+  }
+
+  function bestMove(aiP, humanP) {
+    var cands = candidates();
+    if (!cands.length) return null;
+    var lvl = parseInt($('level').value, 10) || 2;
+    var best = cands[0], bestSc = -1;
+    for (var i = 0; i < cands.length; i++) {
+      var c = cands[i];
+      var my = pointScore(c.x, c.y, aiP);
+      var op = pointScore(c.x, c.y, humanP);
+      var sc = my * 1.15 + op;
+      if (lvl >= 3) {
+        var dx = Math.abs(c.x - 7), dy = Math.abs(c.y - 7);
+        sc += (14 - dx - dy) * 6;
+      }
+      if (lvl === 1) sc = my + op * 0.55;
+      if (sc > bestSc) { bestSc = sc; best = c; }
+    }
+    return best;
+  }
+
+  function aiTurn() {
+    if (over || $('mode').value !== 'ai') return;
+    var ai = human === 1 ? 2 : 1;
+    if (turn !== ai) return;
+    thinking = true; updateBar();
+    setTimeout(function () {
+      var mv = bestMove(ai, human);
+      thinking = false;
+      if (!mv) { over = true; updateBar(); return; }
+      place(mv.x, mv.y, ai);
+    }, 200);
+  }
+
+  cv.addEventListener('click', function (e) {
+    if (over || thinking) return;
+    if ($('mode').value === 'ai' && turn !== human) return;
+
+    var r = cv.getBoundingClientRect();
+    var sx = cv.width / r.width;
+    var mx = (e.clientX - r.left) * sx;
+    var my = (e.clientY - r.top) * sx;
+    var x = Math.round((mx - PAD) / CELL);
+    var y = Math.round((my - PAD) / CELL);
+    if (!inb(x, y) || board[y][x]) return;
+
+    if (place(x, y, turn)) return;
+    if ($('mode').value === 'ai') aiTurn();
+  });
+
+  $('btnNew').onclick = reset;
+  $('btnUndo').onclick = function () {
+    if (thinking || !history.length) { toast('没有可撤销的棋步'); return; }
+    var steps = ($('mode').value === 'ai' && history.length >= 2) ? 2 : 1;
+    for (var i = 0; i < steps; i++) {
+      var h = history.pop();
+      if (!h) break;
+      board[h.y][h.x] = 0;
+      turn = h.p;
+    }
+    over = false; winLine = null;
+    draw(); updateBar();
+    $('status').textContent = '已悔棋。';
+  };
+  $('btnHint').onclick = function () {
+    if (over || thinking) return;
+    var who = $('mode').value === 'pvp' ? turn : human;
+    var mv = bestMove(who, who === 1 ? 2 : 1);
+    if (mv) {
+      toast('建议下在 (' + (mv.x + 1) + ', ' + (mv.y + 1) + ')');
+      $('status').textContent = '建议落点：从左往右第 ' + (mv.x + 1) + ' 列，从上往下第 ' + (mv.y + 1) + ' 行。';
+    }
+  };
+  $('mode').addEventListener('change', function () {
+    $('boxSide').style.display = this.value === 'pvp' ? 'none' : '';
+    reset();
+  });
+  $('side').addEventListener('change', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>

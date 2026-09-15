@@ -1,0 +1,13 @@
+# 临时验证文件（截图等）
+_shot*.png
+_s_*.png
+_*.html
+_*.js.bak
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 云端验证临时文件
+_remote*.js
