@@ -98,14 +98,25 @@ http://localhost:8756
 
 ## 五、部署
 
-### 当前已上线地址（可直接打开）
+### 当前已上线地址
+
+**① GitHub Pages —— 正式地址（推荐）**
+
+```
+https://cyongch.github.io/yjtools/
+```
+
+- 仓库：<https://github.com/cyongch/yjtools>（public）
+- 永久地址、自带 HTTPS、可绑定自有域名、边缘缓存行为正常
+- 更新方式见下方「用 API 推送更新」（本机 `git push` 走不通，原因见该节）
+
+**② WorkBuddy 云端 —— 临时备用**
 
 ```
 https://f967263b39374e239e759d9f08c36ad1.app.workbuddy.host
 ```
 
-> 通过 WorkBuddy 云端发布，已验证可访问，可直接分享给他人。
-> **这是临时地址**，适合演示与分发；长期运营请按下节部署到自己的域名。
+> 适合快速演示。**边缘缓存很顽固**（详见下文），长期用请走 GitHub Pages。
 >
 > 历史地址（已下线，勿再使用）：`25119ef1…`、`da59e1a4…`
 
@@ -130,6 +141,27 @@ https://f967263b39374e239e759d9f08c36ad1.app.workbuddy.host
 
 > 教训：最初把导航写成 `href="#game"` 却忘了放对应锚点元素，结果是**点击后页面毫无变化**。
 > 教训是——写锚点链接时，必须确认目标元素真的存在；如果本意是"快捷筛选"，就用 JS 处理，别假装成锚点。
+
+### 用 API 推送更新（本机唯一可行的方式）
+
+**本机访问不了 `github.com`**（实测连接超时 15 秒无响应），所以 `git push` / `git clone` 都用不了。
+但 `api.github.com` 是通的，因此更新走 GitHub 的 **Git Data API**：由 `_push_github.js` 把本地文件逐个上传为 blob，
+再组装成一棵 tree 与一个 commit，最后移动 `main` 分支指针。**效果与一次正常 `git push` 等价**（单次干净提交，不是逐文件堆叠）。
+
+更新流程：
+
+```bash
+cd "D:/造价AI/前端工具"
+git add -A && git commit -m "你的改动说明"                    # 本地记录
+GH_TOKEN=<你的 token> node _push_github.js $(git ls-files)    # 上传到 GitHub
+```
+
+推送后 GitHub Pages 会自动重建，约 1 分钟生效。
+
+**注意事项**：
+- 上传哪些文件由 `$(git ls-files)` 决定，所以**新增文件必须先 `git add`**，否则不会被上传。
+- 脚本从环境变量读 token，**不落盘、不写入 `.git/config`**。token 需要 `repo` 权限。
+- 空仓库首次推送时，脚本会先用 Contents API 建一个初始提交（Git Data API 不允许直接操作空仓库，会返回 409）。
 
 ### 自行部署到 Cloudflare Pages（免费且无需备案）
 
